@@ -707,7 +707,7 @@ function renderTable() {
   colOrder.forEach(id => {
     const col = BASE_COLUMNS.find(c => c.id === id);
     const isSortable = SORTABLE_COLS.includes(id);
-    const arrow = sortCol === id ? (sortDir === 1 ? ' ▲' : ' ▼') : '';
+    const arrow = isSortable ? (sortCol === id ? (sortDir === 1 ? ' ▲' : ' ▼') : ' ⇅') : '';
     const sortAttr = isSortable ? `onclick="toggleSort('${id}')" style="cursor:pointer;"` : '';
     headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr}>${col.label}${arrow}</th>`;
   });
