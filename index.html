@@ -773,7 +773,11 @@ function renderPieChart() {
     totalVal = values.reduce((s,v) => s + v, 0);
   } else {
     totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
-    labels = holdings.map(h => isAllView() && h._accountName ? `${h.ticker}(${h._accountName})` : h.ticker);
+    labels = holdings.map(h => {
+      const sec = h.sector || '';
+      const acc = isAllView() && h._accountName ? `(${h._accountName})` : '';
+      return sec ? `${h.ticker} ${sec}${acc}` : `${h.ticker}${acc}`;
+    });
     values = holdings.map(h => h.shares * (h.currentPrice || h.costPerShare));
   }
 
