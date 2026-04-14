@@ -40,7 +40,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
 .card { background: #fff; border-radius: 10px; padding: 18px 20px; }
 .card .label { font-size: 12px; color: #999; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .card .label .icon { font-size: 16px; }
@@ -155,6 +155,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       <div class="card">
         <div class="label"><span class="icon">%</span> 盈亏比例</div>
         <div class="value" id="totalPLPct">0.00%</div>
+      </div>
+      <div class="card" id="cashCard">
+        <div class="label"><span class="icon">$</span> 现金</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input class="editable-input" id="cashInput" type="number" step="0.01" min="0" style="width:120px;font-size:18px;font-weight:700;" onchange="updateCash(this.value)">
+          <span id="cashPct" style="font-size:13px;color:#888;"></span>
+        </div>
       </div>
     </div>
 
@@ -539,10 +546,12 @@ function renderAll() {
 function renderSidebar() {
   const list = document.getElementById('accountList');
   let totalAll = 0, plAll = 0;
+  let cashAll = 0;
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
-    totalAll += tv;
+    totalAll += tv + (a.cash || 0);
+    cashAll += (a.cash || 0);
     plAll += (tv - tc);
   });
 
@@ -554,11 +563,14 @@ function renderSidebar() {
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
+    const cash = a.cash || 0;
     const pl = tv - tc;
     const plPct = tc > 0 ? (pl / tc * 100) : 0;
+    const cashLine = cash > 0 ? `<div class="info" style="color:#999;">现金: $${fmt(cash)}</div>` : '';
     html += `<div class="account-item ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')">
       <div class="name">${escHtml(a.name)}</div>
-      <div class="info">$${fmt(tv)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
+      <div class="info">$${fmt(tv + cash)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
+      ${cashLine}
     </div>`;
   });
   list.innerHTML = html;
@@ -583,12 +595,23 @@ function renderSummary() {
   pctEl.textContent = `${pl >= 0 ? '+' : ''}${plPct.toFixed(2)}%`;
   pctEl.className = `value ${pl >= 0 ? 'gain' : 'loss'}`;
 
+  // Cash
+  let cash = 0;
   if (isAllView()) {
+    data.accounts.forEach(a => { cash += (a.cash || 0); });
     document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
   } else {
     const account = getActiveAccount();
+    cash = account?.cash || 0;
     document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
   }
+  document.getElementById('cashInput').value = cash || '';
+  const totalWithCash = totalVal + cash;
+  const cashPct = totalWithCash > 0 ? (cash / totalWithCash * 100).toFixed(1) : '0.0';
+  document.getElementById('cashPct').textContent = cash > 0 ? `${cashPct}%` : '';
+
+  // Hide cash edit in all-view (must edit per account)
+  document.getElementById('cashInput').disabled = isAllView();
 }
 
 // ==================== Column System ====================
@@ -1091,6 +1114,16 @@ function updateSectorByRef(accountId, index, value) {
   if (!account) return;
   account.holdings[index].sector = value;
   saveData(data);
+}
+
+function updateCash(value) {
+  if (isAllView()) return;
+  const account = getActiveAccount();
+  if (!account) return;
+  const num = parseFloat(value);
+  account.cash = isNaN(num) || num < 0 ? 0 : num;
+  saveData(data);
+  renderAll();
 }
 
 function updateFieldByRef(accountId, index, field, value) {
