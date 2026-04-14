@@ -761,10 +761,66 @@ function renderTable() {
       html += `<td><button class="delete-btn" onclick="deleteHoldingByRef('${accId}',${idx})" title="删除">x</button></td>`;
       html += '</tr>';
     });
+    // Cash row
+    html += renderCashRow(allView, cash, totalAssets, activeCols.length);
     tbody.innerHTML = html;
   }
 
   initTableInteractions();
+}
+
+function renderCashRow(allView, cash, totalAssets, colCount) {
+  const weightPct = totalAssets > 0 ? (cash / totalAssets * 100).toFixed(1) : '0.0';
+
+  // Get cash target from current view
+  let cashTarget = null;
+  if (isAllView()) {
+    // Sum all account cash targets - not editable in all view
+  } else {
+    const acc = getActiveAccount();
+    cashTarget = acc?.cashTargetPct ?? null;
+  }
+
+  let adjustText = '-', adjustClass = '';
+  if (cashTarget != null && cashTarget !== '' && totalAssets > 0) {
+    const targetCash = cashTarget / 100 * totalAssets;
+    const diff = targetCash - cash;
+    if (diff > 1) { adjustText = `+$${fmt(diff)}`; adjustClass = 'adjust-buy'; }
+    else if (diff < -1) { adjustText = `-$${fmt(Math.abs(diff))}`; adjustClass = 'adjust-sell'; }
+    else { adjustText = '0'; }
+  }
+
+  let html = '<tr style="background:#f9fdf9;border-top:2px solid #e0e0e0;">';
+  html += '<td class="ticker-cell"><div class="ticker" style="color:#4caf50;">CASH</div><div class="name">现金</div></td>';
+  if (allView) html += '<td>-</td>';
+
+  colOrder.forEach(id => {
+    switch(id) {
+      case 'type': html += '<td><span class="type-badge" style="background:#e8f5e9;color:#4caf50;">CASH</span></td>'; break;
+      case 'shares': html += `<td><input class="editable-input" type="number" step="0.01" min="0" value="${cash || ''}" onchange="updateCash(this.value)" style="width:80px" ${isAllView() ? 'disabled' : ''}></td>`; break;
+      case 'cost': html += '<td>-</td>'; break;
+      case 'price': html += '<td>-</td>'; break;
+      case 'mv': html += `<td>$${fmt(cash)}</td>`; break;
+      case 'pl': html += '<td>-</td>'; break;
+      case 'plpct': html += '<td>-</td>'; break;
+      case 'weight': html += `<td>${weightPct}%</td>`; break;
+      case 'target': html += `<td><input class="editable-input" type="number" step="0.1" min="0" max="100" value="${cashTarget ?? ''}" placeholder="—" onchange="updateCashTarget(this.value)" ${isAllView() ? 'disabled' : ''}></td>`; break;
+      case 'adjust': html += `<td class="${adjustClass}">${adjustText}</td>`; break;
+      case 'sector': html += '<td>-</td>'; break;
+      default: html += '<td></td>';
+    }
+  });
+  html += '<td></td></tr>';
+  return html;
+}
+
+function updateCashTarget(value) {
+  if (isAllView()) return;
+  const account = getActiveAccount();
+  if (!account) return;
+  account.cashTargetPct = value === '' ? null : parseFloat(value);
+  saveData(data);
+  renderTable();
 }
 
 function initTableInteractions() {
