@@ -226,20 +226,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
     </div>
     <div class="form-group">
       <label>板块</label>
-      <select id="hSector">
-        <option value="科技">科技</option>
-        <option value="金融">金融</option>
-        <option value="医疗">医疗</option>
-        <option value="消费">消费</option>
-        <option value="工业">工业</option>
-        <option value="能源">能源</option>
-        <option value="材料">材料</option>
-        <option value="地产">地产</option>
-        <option value="公用事业">公用事业</option>
-        <option value="通信">通信</option>
-        <option value="ETF">ETF</option>
-        <option value="其他">其他</option>
-      </select>
+      <select id="hSector"></select>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('addHoldingModal')">取消</button>
@@ -309,7 +296,7 @@ function setGHConfig(config) {
 
 // ==================== Data Layer ====================
 const STORAGE_KEY = 'portfolio_tracker_data';
-const SECTORS = ['科技','金融','医疗','消费','工业','能源','材料','地产','公用事业','通信','ETF','其他'];
+const SECTORS = ['软件','半导体','数据中心','AI','云计算','网络安全','电商','社交媒体','金融科技','加密货币','银行','保险','医疗','生物科技','消费','奢侈品','餐饮','工业','能源','新能源','材料','地产','公用事业','通信','汽车','航空航天','ETF'];
 
 function getDefaultData() {
   return {
@@ -685,7 +672,13 @@ function getCellHtml(colId, h, accId, idx, totalVal) {
     case 'weight': return `<td>${weight.toFixed(1)}%</td>`;
     case 'target': return `<td><input class="editable-input" type="number" step="0.1" min="0" max="100" value="${h.targetPct ?? ''}" placeholder="—" onchange="updateTargetByRef('${accId}',${idx},this.value)"></td>`;
     case 'adjust': return `<td class="${adjustClass}">${adjustText}</td>`;
-    case 'sector': return `<td><select class="sector-select" onchange="updateSectorByRef('${accId}',${idx},this.value)">${SECTORS.map(s => `<option value="${s}" ${h.sector === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>`;
+    case 'sector': {
+      const isCustom = h.sector && !SECTORS.includes(h.sector);
+      const opts = SECTORS.map(s => `<option value="${s}" ${h.sector === s ? 'selected' : ''}>${s}</option>`).join('');
+      const customOpt = `<option value="__custom__" ${isCustom ? '' : ''}>自定义...</option>`;
+      const customSelected = isCustom ? `<option value="${escHtml(h.sector)}" selected>${escHtml(h.sector)}</option>` : '';
+      return `<td><select class="sector-select" onchange="handleSectorChange('${accId}',${idx},this)">${opts}${customSelected}${customOpt}</select></td>`;
+    }
     default: return '<td></td>';
   }
 }
@@ -966,7 +959,10 @@ function showAddHoldingModal() {
   document.getElementById('holdingModalTitle').textContent = '添加持仓';
   ['hTicker','hName','hShares','hCost'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('hType').value = 'STOCK';
-  document.getElementById('hSector').value = '科技';
+  const hSec = document.getElementById('hSector');
+  hSec.innerHTML = SECTORS.map(s => `<option value="${s}">${s}</option>`).join('') + '<option value="__custom__">自定义...</option>';
+  hSec.value = '软件';
+  hSec.onchange = function() { if (this.value === '__custom__') { const c = prompt('请输入自定义板块名称：'); if (c && c.trim()) { const o = document.createElement('option'); o.value = c.trim(); o.textContent = c.trim(); this.insertBefore(o, this.lastChild); this.value = c.trim(); } else { this.value = '软件'; } } };
   const accGroup = document.getElementById('hAccountGroup');
   const accSelect = document.getElementById('hAccount');
   if (isAllView()) {
@@ -1072,6 +1068,22 @@ function updateTargetByRef(accountId, index, value) {
   account.holdings[index].targetPct = value === '' ? null : parseFloat(value);
   saveData(data);
   renderTable();
+}
+
+function handleSectorChange(accountId, index, selectEl) {
+  if (selectEl.value === '__custom__') {
+    const custom = prompt('请输入自定义板块名称：');
+    if (custom && custom.trim()) {
+      updateSectorByRef(accountId, index, custom.trim());
+      renderTable();
+    } else {
+      // Cancelled — revert to previous value
+      const account = data.accounts.find(a => a.id === accountId);
+      if (account) selectEl.value = account.holdings[index].sector;
+    }
+  } else {
+    updateSectorByRef(accountId, index, selectEl.value);
+  }
 }
 
 function updateSectorByRef(accountId, index, value) {
