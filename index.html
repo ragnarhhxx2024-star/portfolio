@@ -40,7 +40,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+.summary-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
 .card { background: #fff; border-radius: 10px; padding: 18px 20px; }
 .card .label { font-size: 12px; color: #999; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .card .label .icon { font-size: 16px; }
@@ -140,8 +140,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
     <!-- Summary -->
     <div class="summary-cards">
+      <div class="card" style="background:linear-gradient(135deg,#4caf50 0%,#43a047 100%);color:#fff;">
+        <div class="label" style="color:rgba(255,255,255,.8);"><span class="icon">$</span> 总资产</div>
+        <div class="value" id="totalAssets" style="color:#fff;">$0.00</div>
+      </div>
       <div class="card">
-        <div class="label"><span class="icon">$</span> 总市值</div>
+        <div class="label"><span class="icon">$</span> 持仓市值</div>
         <div class="value" id="totalValue">$0.00</div>
       </div>
       <div class="card">
@@ -585,6 +589,19 @@ function renderSummary() {
   const pl = totalVal - totalCost;
   const plPct = totalCost > 0 ? (pl / totalCost * 100) : 0;
 
+  // Cash
+  let cash = 0;
+  if (isAllView()) {
+    data.accounts.forEach(a => { cash += (a.cash || 0); });
+    document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
+  } else {
+    const account = getActiveAccount();
+    cash = account?.cash || 0;
+    document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
+  }
+
+  const totalAssets = totalVal + cash;
+  document.getElementById('totalAssets').textContent = `$${fmt(totalAssets)}`;
   document.getElementById('totalValue').textContent = `$${fmt(totalVal)}`;
   document.getElementById('totalCost').textContent = `$${fmt(totalCost)}`;
 
@@ -596,22 +613,9 @@ function renderSummary() {
   pctEl.textContent = `${pl >= 0 ? '+' : ''}${plPct.toFixed(2)}%`;
   pctEl.className = `value ${pl >= 0 ? 'gain' : 'loss'}`;
 
-  // Cash
-  let cash = 0;
-  if (isAllView()) {
-    data.accounts.forEach(a => { cash += (a.cash || 0); });
-    document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
-  } else {
-    const account = getActiveAccount();
-    cash = account?.cash || 0;
-    document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
-  }
   document.getElementById('cashInput').value = cash || '';
-  const totalWithCash = totalVal + cash;
-  const cashPct = totalWithCash > 0 ? (cash / totalWithCash * 100).toFixed(1) : '0.0';
+  const cashPct = totalAssets > 0 ? (cash / totalAssets * 100).toFixed(1) : '0.0';
   document.getElementById('cashPct').textContent = cash > 0 ? `${cashPct}%` : '';
-
-  // Hide cash edit in all-view (must edit per account)
   document.getElementById('cashInput').disabled = isAllView();
 }
 
@@ -713,6 +717,10 @@ function renderTable() {
   const holdings = getViewHoldings();
   const allView = isAllView();
   const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+  let cash = 0;
+  if (isAllView()) { data.accounts.forEach(a => { cash += (a.cash || 0); }); }
+  else { const acc = getActiveAccount(); cash = acc?.cash || 0; }
+  const totalAssets = totalVal + cash;
 
   const activeCols = ['ticker'];
   if (allView) activeCols.push('account');
@@ -734,8 +742,8 @@ function renderTable() {
   // Sort if active
   if (sortCol && sortDir !== 0) {
     holdings.sort((a, b) => {
-      const va = getSortValue(a, sortCol, totalVal);
-      const vb = getSortValue(b, sortCol, totalVal);
+      const va = getSortValue(a, sortCol, totalAssets);
+      const vb = getSortValue(b, sortCol, totalAssets);
       return (va - vb) * sortDir;
     });
   }
@@ -748,8 +756,8 @@ function renderTable() {
       const accId = h._accountId, idx = h._holdingIdx;
       html += '<tr>';
       html += `<td class="ticker-cell"><div class="ticker">${escHtml(h.ticker)}</div><div class="name">${escHtml(h.name || '')}</div></td>`;
-      if (allView) html += getCellHtml('account', h, accId, idx, totalVal);
-      colOrder.forEach(id => { html += getCellHtml(id, h, accId, idx, totalVal); });
+      if (allView) html += getCellHtml('account', h, accId, idx, totalAssets);
+      colOrder.forEach(id => { html += getCellHtml(id, h, accId, idx, totalAssets); });
       html += `<td><button class="delete-btn" onclick="deleteHoldingByRef('${accId}',${idx})" title="删除">x</button></td>`;
       html += '</tr>';
     });
