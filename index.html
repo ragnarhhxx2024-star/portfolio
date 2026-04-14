@@ -826,19 +826,11 @@ function updateCashTarget(value) {
   if (isAllView()) return;
   const account = getActiveAccount();
   if (!account) return;
-  const num = value === '' ? null : parseFloat(value);
-  if (num != null) {
-    const oldVal = account.cashTargetPct || 0;
-    const currentSum = getTargetSum() - oldVal + num;
-    if (currentSum > 100) {
-      showToast(`目标%总和将达到 ${currentSum.toFixed(1)}%，超过100%`, 'error');
-      renderTable();
-      return;
-    }
-  }
-  account.cashTargetPct = num;
+  account.cashTargetPct = value === '' ? null : parseFloat(value);
   saveData(data);
   renderTable();
+  const sum = getTargetSum();
+  if (sum > 100) showToast(`目标%总和 ${sum}%，超过100%`, 'error');
 }
 
 function initTableInteractions() {
@@ -1196,19 +1188,11 @@ function getTargetSum() {
 function updateTargetByRef(accountId, index, value) {
   const account = data.accounts.find(a => a.id === accountId);
   if (!account) return;
-  const num = value === '' ? null : parseFloat(value);
-  if (num != null) {
-    const oldVal = account.holdings[index].targetPct || 0;
-    const currentSum = getTargetSum() - oldVal + num;
-    if (currentSum > 100) {
-      showToast(`目标%总和将达到 ${currentSum.toFixed(1)}%，超过100%`, 'error');
-      renderTable();
-      return;
-    }
-  }
-  account.holdings[index].targetPct = num;
+  account.holdings[index].targetPct = value === '' ? null : parseFloat(value);
   saveData(data);
   renderTable();
+  const sum = getTargetSum();
+  if (sum > 100) showToast(`目标%总和 ${sum}%，超过100%`, 'error');
 }
 
 function handleSectorChange(accountId, index, selectEl) {
