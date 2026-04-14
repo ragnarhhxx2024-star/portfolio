@@ -10,7 +10,7 @@
           "type": "STOCK",
           "shares": 40,
           "costPerShare": 142.977,
-          "currentPrice": 255.095,
+          "currentPrice": 255.07,
           "targetPct": null,
           "sector": "半导体"
         },
@@ -20,7 +20,7 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 165.047,
-          "currentPrice": 162.57,
+          "currentPrice": 163.0,
           "targetPct": null,
           "sector": "数据中心"
         },
@@ -30,7 +30,7 @@
           "type": "STOCK",
           "shares": 90,
           "costPerShare": 36.16,
-          "currentPrice": 21.275,
+          "currentPrice": 21.36,
           "targetPct": null,
           "sector": "医疗"
         },
@@ -40,7 +40,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 264.234,
-          "currentPrice": 184.24,
+          "currentPrice": 184.41,
           "targetPct": null,
           "sector": "加密货币"
         },
@@ -50,7 +50,7 @@
           "type": "STOCK",
           "shares": 14,
           "costPerShare": 70.557,
-          "currentPrice": 104.99,
+          "currentPrice": 105.49,
           "targetPct": null,
           "sector": "加密货币"
         },
@@ -60,7 +60,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 145.083,
-          "currentPrice": 135.695,
+          "currentPrice": 135.7,
           "targetPct": null,
           "sector": "AI"
         },
@@ -70,7 +70,7 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 185.982,
-          "currentPrice": 91.52,
+          "currentPrice": 91.46,
           "targetPct": null,
           "sector": "软件"
         },
@@ -80,7 +80,7 @@
           "type": "STOCK",
           "shares": 15,
           "costPerShare": 50.43,
-          "currentPrice": 62.585,
+          "currentPrice": 62.47,
           "targetPct": null,
           "sector": "金融科技"
         },
@@ -90,7 +90,7 @@
           "type": "STOCK",
           "shares": 1,
           "costPerShare": 523.31,
-          "currentPrice": 662.71,
+          "currentPrice": 662.49,
           "targetPct": null,
           "sector": "社交媒体"
         },
@@ -100,7 +100,7 @@
           "type": "STOCK",
           "shares": 2,
           "costPerShare": 265.995,
-          "currentPrice": 296.97,
+          "currentPrice": 296.61,
           "targetPct": null,
           "sector": "能源"
         },
@@ -110,11 +110,28 @@
           "type": "STOCK",
           "shares": 6,
           "costPerShare": 63.825,
-          "currentPrice": 68.775,
+          "currentPrice": 68.9,
           "targetPct": null,
           "sector": "消费"
         }
       ]
+    },
+    {
+      "id": "sg",
+      "name": "长桥新加坡",
+      "holdings": [
+        {
+          "ticker": "IBIT",
+          "name": "iShares Bitcoin Trust",
+          "type": "ETF",
+          "shares": 16,
+          "costPerShare": 61.625,
+          "currentPrice": 42.13,
+          "targetPct": null,
+          "sector": "加密货币"
+        }
+      ],
+      "cash": 8.97
     }
   ],
   "activeAccountId": "hk",
@@ -122,9 +139,15 @@
     "hk": [
       {
         "date": "2026-04-14",
-        "value": 22699.004999999997
+        "value": 22717.3
+      }
+    ],
+    "sg": [
+      {
+        "date": "2026-04-14",
+        "value": 674.08
       }
     ]
   },
-  "lastUpdate": "2026-04-14T19:58:45.392945+00:00"
+  "lastUpdate": "2026-04-14T21:24:16.746781+00:00"
 }
