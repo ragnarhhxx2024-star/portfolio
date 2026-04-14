@@ -729,12 +729,20 @@ function renderTable() {
 
   let headHtml = '<th>代码/名称</th>';
   if (allView) headHtml += '<th>账户</th>';
+  // Calculate target sum for header
+  const targetSum = getTargetSum();
+
   colOrder.forEach(id => {
     const col = BASE_COLUMNS.find(c => c.id === id);
     const isSortable = SORTABLE_COLS.includes(id);
     const arrow = isSortable ? (sortCol === id ? (sortDir === 1 ? ' ▲' : ' ▼') : ' ⇅') : '';
     const sortAttr = isSortable ? `onclick="toggleSort('${id}')" style="cursor:pointer;"` : '';
-    headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr}>${col.label}${arrow}</th>`;
+    let extra = '';
+    if (id === 'target') {
+      const color = targetSum > 100 ? '#f44336' : targetSum === 100 ? '#4caf50' : '#999';
+      extra = `<div style="font-size:10px;color:${color};font-weight:600;">${targetSum}%</div>`;
+    }
+    headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr}>${col.label}${arrow}${extra}</th>`;
   });
   headHtml += '<th style="width:40px"></th>';
   headTr.innerHTML = headHtml;
@@ -818,7 +826,17 @@ function updateCashTarget(value) {
   if (isAllView()) return;
   const account = getActiveAccount();
   if (!account) return;
-  account.cashTargetPct = value === '' ? null : parseFloat(value);
+  const num = value === '' ? null : parseFloat(value);
+  if (num != null) {
+    const oldVal = account.cashTargetPct || 0;
+    const currentSum = getTargetSum() - oldVal + num;
+    if (currentSum > 100) {
+      showToast(`目标%总和将达到 ${currentSum.toFixed(1)}%，超过100%`, 'error');
+      renderTable();
+      return;
+    }
+  }
+  account.cashTargetPct = num;
   saveData(data);
   renderTable();
 }
@@ -1158,10 +1176,37 @@ function deleteHoldingByRef(accountId, index) {
   renderAll();
 }
 
+function getTargetSum() {
+  let sum = 0;
+  if (isAllView()) {
+    data.accounts.forEach(a => {
+      a.holdings.forEach(h => { if (h.targetPct != null) sum += h.targetPct; });
+      if (a.cashTargetPct != null) sum += a.cashTargetPct;
+    });
+  } else {
+    const acc = getActiveAccount();
+    if (acc) {
+      acc.holdings.forEach(h => { if (h.targetPct != null) sum += h.targetPct; });
+      if (acc.cashTargetPct != null) sum += acc.cashTargetPct;
+    }
+  }
+  return Math.round(sum * 10) / 10;
+}
+
 function updateTargetByRef(accountId, index, value) {
   const account = data.accounts.find(a => a.id === accountId);
   if (!account) return;
-  account.holdings[index].targetPct = value === '' ? null : parseFloat(value);
+  const num = value === '' ? null : parseFloat(value);
+  if (num != null) {
+    const oldVal = account.holdings[index].targetPct || 0;
+    const currentSum = getTargetSum() - oldVal + num;
+    if (currentSum > 100) {
+      showToast(`目标%总和将达到 ${currentSum.toFixed(1)}%，超过100%`, 'error');
+      renderTable();
+      return;
+    }
+  }
+  account.holdings[index].targetPct = num;
   saveData(data);
   renderTable();
 }
