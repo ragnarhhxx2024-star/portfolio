@@ -12,7 +12,7 @@
           "costPerShare": 142.977,
           "currentPrice": 255.095,
           "targetPct": null,
-          "sector": "科技"
+          "sector": "半导体"
         },
         {
           "ticker": "ORCL",
@@ -22,7 +22,7 @@
           "costPerShare": 165.047,
           "currentPrice": 162.57,
           "targetPct": null,
-          "sector": "科技"
+          "sector": "数据中心"
         },
         {
           "ticker": "HIMS",
@@ -42,7 +42,7 @@
           "costPerShare": 264.234,
           "currentPrice": 184.24,
           "targetPct": null,
-          "sector": "金融"
+          "sector": "加密货币"
         },
         {
           "ticker": "CRCL",
@@ -52,7 +52,7 @@
           "costPerShare": 70.557,
           "currentPrice": 104.99,
           "targetPct": null,
-          "sector": "金融"
+          "sector": "加密货币"
         },
         {
           "ticker": "PLTR",
@@ -62,7 +62,7 @@
           "costPerShare": 145.083,
           "currentPrice": 135.695,
           "targetPct": null,
-          "sector": "科技"
+          "sector": "AI"
         },
         {
           "ticker": "DUOL",
@@ -72,7 +72,7 @@
           "costPerShare": 185.982,
           "currentPrice": 91.52,
           "targetPct": null,
-          "sector": "科技"
+          "sector": "软件"
         },
         {
           "ticker": "LMND",
@@ -82,7 +82,7 @@
           "costPerShare": 50.43,
           "currentPrice": 62.585,
           "targetPct": null,
-          "sector": "金融"
+          "sector": "金融科技"
         },
         {
           "ticker": "META",
@@ -92,7 +92,7 @@
           "costPerShare": 523.31,
           "currentPrice": 662.71,
           "targetPct": null,
-          "sector": "科技"
+          "sector": "社交媒体"
         },
         {
           "ticker": "CEG",
