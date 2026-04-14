@@ -399,6 +399,7 @@ async function saveToGitHub(d) {
 }
 
 async function saveData(d) {
+  d.lastUpdate = new Date().toISOString();
   saveLocalCache(d);
   // Debounce GitHub saves
   if (saveData._timer) clearTimeout(saveData._timer);
@@ -416,27 +417,27 @@ async function saveData(d) {
 let data = getDefaultData();
 
 async function initData() {
-  // Try remote first (GitHub Pages), then local cache, then default
   const remote = await loadRemoteData();
-  if (remote) {
+  const local = loadLocalData();
+
+  // Use whichever has a newer lastUpdate, or remote if equal
+  if (remote && local) {
+    const rt = remote.lastUpdate || '';
+    const lt = local.lastUpdate || '';
+    data = lt > rt ? local : remote;
+  } else if (remote) {
     data = remote;
-    saveLocalCache(data);
-  } else {
-    const local = loadLocalData();
-    if (local) data = local;
+  } else if (local) {
+    data = local;
   }
+
+  saveLocalCache(data);
 
   if (!data.activeAccountId && data.accounts.length > 0) {
     data.activeAccountId = data.accounts[0].id;
   }
 
   renderAll();
-
-  // Show settings if not configured
-  const config = getGHConfig();
-  if (!config || !config.token) {
-    showSettingsModal();
-  }
 }
 
 // ==================== Data Helpers ====================
