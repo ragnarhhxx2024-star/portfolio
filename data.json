@@ -132,6 +132,43 @@
         }
       ],
       "cash": 8.97
+    },
+    {
+      "id": "ibkr",
+      "name": "盈透",
+      "holdings": [
+        {
+          "ticker": "RBLX",
+          "name": "Roblox",
+          "type": "STOCK",
+          "shares": 10,
+          "costPerShare": 63.84,
+          "currentPrice": 58.3,
+          "targetPct": null,
+          "sector": "软件"
+        },
+        {
+          "ticker": "TEM",
+          "name": "Tempus AI",
+          "type": "STOCK",
+          "shares": 10,
+          "costPerShare": 50.41,
+          "currentPrice": 49.53,
+          "targetPct": null,
+          "sector": "AI"
+        },
+        {
+          "ticker": "AMD",
+          "name": "AMD",
+          "type": "STOCK",
+          "shares": 2,
+          "costPerShare": 156.72,
+          "currentPrice": 255.07,
+          "targetPct": null,
+          "sector": "半导体"
+        }
+      ],
+      "cash": 56.63
     }
   ],
   "activeAccountId": "hk",
@@ -147,7 +184,13 @@
         "date": "2026-04-14",
         "value": 674.08
       }
+    ],
+    "ibkr": [
+      {
+        "date": "2026-04-14",
+        "value": 1588.44
+      }
     ]
   },
-  "lastUpdate": "2026-04-14T21:24:16.746781+00:00"
+  "lastUpdate": "2026-04-14T21:48:52.182653+00:00"
 }
