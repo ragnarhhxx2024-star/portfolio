@@ -1,40 +1,130 @@
 {
   "accounts": [
     {
-      "id": "1",
-      "name": "测试组合",
+      "id": "hk",
+      "name": "长桥香港",
       "holdings": [
-        {
-          "ticker": "AAPL",
-          "name": "苹果",
-          "type": "STOCK",
-          "shares": 10,
-          "costPerShare": 200,
-          "currentPrice": 258.36,
-          "targetPct": null,
-          "sector": "科技"
-        },
         {
           "ticker": "AMD",
           "name": "AMD",
           "type": "STOCK",
-          "shares": 5,
-          "costPerShare": 150,
-          "currentPrice": 255.15,
+          "shares": 40,
+          "costPerShare": 142.977,
+          "currentPrice": 255.095,
           "targetPct": null,
           "sector": "科技"
+        },
+        {
+          "ticker": "ORCL",
+          "name": "甲骨文",
+          "type": "STOCK",
+          "shares": 13,
+          "costPerShare": 165.047,
+          "currentPrice": 162.57,
+          "targetPct": null,
+          "sector": "科技"
+        },
+        {
+          "ticker": "HIMS",
+          "name": "Hims & Hers Health",
+          "type": "STOCK",
+          "shares": 90,
+          "costPerShare": 36.16,
+          "currentPrice": 21.275,
+          "targetPct": null,
+          "sector": "医疗"
+        },
+        {
+          "ticker": "COIN",
+          "name": "Coinbase",
+          "type": "STOCK",
+          "shares": 10,
+          "costPerShare": 264.234,
+          "currentPrice": 184.24,
+          "targetPct": null,
+          "sector": "金融"
+        },
+        {
+          "ticker": "CRCL",
+          "name": "Circle",
+          "type": "STOCK",
+          "shares": 14,
+          "costPerShare": 70.557,
+          "currentPrice": 104.99,
+          "targetPct": null,
+          "sector": "金融"
+        },
+        {
+          "ticker": "PLTR",
+          "name": "Palantir Tech",
+          "type": "STOCK",
+          "shares": 10,
+          "costPerShare": 145.083,
+          "currentPrice": 135.695,
+          "targetPct": null,
+          "sector": "科技"
+        },
+        {
+          "ticker": "DUOL",
+          "name": "多邻国",
+          "type": "STOCK",
+          "shares": 13,
+          "costPerShare": 185.982,
+          "currentPrice": 91.52,
+          "targetPct": null,
+          "sector": "科技"
+        },
+        {
+          "ticker": "LMND",
+          "name": "Lemonade",
+          "type": "STOCK",
+          "shares": 15,
+          "costPerShare": 50.43,
+          "currentPrice": 62.585,
+          "targetPct": null,
+          "sector": "金融"
+        },
+        {
+          "ticker": "META",
+          "name": "Meta",
+          "type": "STOCK",
+          "shares": 1,
+          "costPerShare": 523.31,
+          "currentPrice": 662.71,
+          "targetPct": null,
+          "sector": "科技"
+        },
+        {
+          "ticker": "CEG",
+          "name": "Constellation Energy",
+          "type": "STOCK",
+          "shares": 2,
+          "costPerShare": 265.995,
+          "currentPrice": 296.97,
+          "targetPct": null,
+          "sector": "能源"
+        },
+        {
+          "ticker": "ELF",
+          "name": "ELF Beauty",
+          "type": "STOCK",
+          "shares": 6,
+          "costPerShare": 63.825,
+          "currentPrice": 68.775,
+          "targetPct": null,
+          "sector": "消费"
         }
       ]
     }
   ],
-  "activeAccountId": "1",
+  "activeAccountId": "hk",
   "history": {
-    "1": [
+    "hk": [
       {
         "date": "2026-04-14",
-        "value": 3859.3500000000004
+        "value": 22699.004999999997
       }
     ]
   },
-  "lastUpdate": "2026-04-14T19:33:13.229381+00:00"
+  "lastUpdate": "2026-04-14T19:58:45.392945+00:00"
 }
