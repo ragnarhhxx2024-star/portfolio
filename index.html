@@ -296,8 +296,20 @@ const GH_CONFIG_KEY = 'portfolio_github_config';
 function getGHConfig() {
   try {
     const raw = localStorage.getItem(GH_CONFIG_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c.token) return c;
+    }
   } catch(e) {}
+  // Auto-config from URL hash: #token=xxx
+  const hash = location.hash.slice(1);
+  if (hash.startsWith('token=')) {
+    const token = decodeURIComponent(hash.split('token=')[1]);
+    const config = { owner: 'ragnarhhxx2024-star', repo: 'portfolio', token };
+    setGHConfig(config);
+    location.hash = '';
+    return config;
+  }
   return null;
 }
 
