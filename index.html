@@ -633,6 +633,32 @@ function getColumnOrder() {
 function saveColumnOrder(order) { localStorage.setItem('portfolio_col_order', JSON.stringify(order)); }
 
 let colOrder = getColumnOrder();
+const SORTABLE_COLS = ['pl', 'plpct', 'weight'];
+let sortCol = null, sortDir = 0; // 0=none, 1=asc, -1=desc
+
+function toggleSort(colId) {
+  if (sortCol === colId) {
+    sortDir = sortDir === -1 ? 1 : sortDir === 1 ? 0 : -1;
+  } else {
+    sortCol = colId;
+    sortDir = -1; // default descending
+  }
+  if (sortDir === 0) sortCol = null;
+  renderTable();
+}
+
+function getSortValue(h, colId, totalVal) {
+  const mv = h.shares * (h.currentPrice || h.costPerShare);
+  const pl = mv - h.shares * h.costPerShare;
+  const plPct = h.costPerShare > 0 ? ((h.currentPrice || h.costPerShare) / h.costPerShare - 1) * 100 : 0;
+  const weight = totalVal > 0 ? (mv / totalVal * 100) : 0;
+  switch(colId) {
+    case 'pl': return pl;
+    case 'plpct': return plPct;
+    case 'weight': return weight;
+    default: return 0;
+  }
+}
 
 function getCellHtml(colId, h, accId, idx, totalVal) {
   const mv = h.shares * (h.currentPrice || h.costPerShare);
@@ -680,10 +706,22 @@ function renderTable() {
   if (allView) headHtml += '<th>账户</th>';
   colOrder.forEach(id => {
     const col = BASE_COLUMNS.find(c => c.id === id);
-    headHtml += `<th class="draggable" draggable="true" data-col="${id}">${col.label}</th>`;
+    const isSortable = SORTABLE_COLS.includes(id);
+    const arrow = sortCol === id ? (sortDir === 1 ? ' ▲' : ' ▼') : '';
+    const sortAttr = isSortable ? `onclick="toggleSort('${id}')" style="cursor:pointer;"` : '';
+    headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr}>${col.label}${arrow}</th>`;
   });
   headHtml += '<th style="width:40px"></th>';
   headTr.innerHTML = headHtml;
+
+  // Sort if active
+  if (sortCol && sortDir !== 0) {
+    holdings.sort((a, b) => {
+      const va = getSortValue(a, sortCol, totalVal);
+      const vb = getSortValue(b, sortCol, totalVal);
+      return (va - vb) * sortDir;
+    });
+  }
 
   if (holdings.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${activeCols.length}" style="text-align:center;padding:40px;color:#999;">暂无持仓，点击"添加持仓"开始</td></tr>`;
