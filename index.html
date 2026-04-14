@@ -822,8 +822,16 @@ function renderPieChart() {
     return;
   }
 
-  const colors = ['#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac','#a0cbe8','#ffbe7d'];
+  const colors = ['#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac','#a0cbe8','#ffbe7d','#86bcb6','#d4a6c8'];
+
+  // Calculate cash
+  let cash = 0;
+  if (isAllView()) { data.accounts.forEach(a => { cash += (a.cash || 0); }); }
+  else { const acc = getActiveAccount(); cash = acc?.cash || 0; }
+
   let labels, values, totalVal;
+  const holdingsVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+  totalVal = holdingsVal + cash;
 
   if (pieMode === 'sector') {
     const sectorMap = {};
@@ -832,18 +840,18 @@ function renderPieChart() {
       const val = h.shares * (h.currentPrice || h.costPerShare);
       sectorMap[sec] = (sectorMap[sec] || 0) + val;
     });
+    if (cash > 0) sectorMap['现金'] = cash;
     const entries = Object.entries(sectorMap).sort((a,b) => b[1] - a[1]);
     labels = entries.map(e => e[0]);
     values = entries.map(e => e[1]);
-    totalVal = values.reduce((s,v) => s + v, 0);
   } else {
-    totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     labels = holdings.map(h => {
       const sec = h.sector || '';
       const acc = isAllView() && h._accountName ? `(${h._accountName})` : '';
       return sec ? `${h.ticker} ${sec}${acc}` : `${h.ticker}${acc}`;
     });
     values = holdings.map(h => h.shares * (h.currentPrice || h.costPerShare));
+    if (cash > 0) { labels.push('现金'); values.push(cash); }
   }
 
   const ctx = document.getElementById('pieChart').getContext('2d');
