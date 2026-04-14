@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投资组合追踪</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
+.container { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 200px; background: #fff; border-right: 1px solid #eee; padding: 20px 8px; flex-shrink: 0; }
+.sidebar h3 { padding: 0 16px 12px; font-size: 13px; color: #999; }
+.account-item { padding: 10px 16px; cursor: pointer; border-left: 4px solid transparent; transition: all .2s; border-radius: 0 6px 6px 0; margin: 2px 8px 2px 0; }
+.account-item:hover { background: #f5f5f5; }
+.account-item.active { border-left-color: #34c759; background: linear-gradient(90deg, #e6f9ed 0%, #f0faf3 100%); }
+.account-item .name { font-weight: 600; font-size: 14px; color: #333; }
+.account-item.active .name { color: #1b8a3a; }
+.account-item .info { font-size: 12px; color: #888; margin-top: 3px; }
+.account-item .info .gain { color: #34c759; font-weight: 600; }
+.account-item .info .loss { color: #f44336; font-weight: 600; }
+.add-account-btn { margin: 12px 16px; padding: 8px; border: 1px dashed #ccc; border-radius: 6px; text-align: center; cursor: pointer; color: #999; font-size: 13px; }
+.add-account-btn:hover { border-color: #4caf50; color: #4caf50; }
+
+/* Main */
+.main { flex: 1; padding: 24px 32px; overflow-x: auto; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.header-actions .update-time { font-size: 12px; color: #999; margin-right: 8px; }
+.btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; color: #555; display: inline-flex; align-items: center; gap: 4px; transition: all .2s; }
+.btn:hover { border-color: #4caf50; color: #4caf50; }
+.btn-primary { background: #4caf50; color: #fff; border-color: #4caf50; }
+.btn-primary:hover { background: #43a047; }
+.btn-danger { color: #f44336; }
+.btn-danger:hover { border-color: #f44336; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Summary Cards */
+.summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.card { background: #fff; border-radius: 10px; padding: 18px 20px; }
+.card .label { font-size: 12px; color: #999; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.card .label .icon { font-size: 16px; }
+.card .value { font-size: 22px; font-weight: 700; }
+.card .value.gain { color: #4caf50; }
+.card .value.loss { color: #f44336; }
+
+/* Account Name Display */
+.account-header { font-size: 13px; color: #666; margin-bottom: 16px; }
+
+/* Holdings Table */
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.table-header h3 { font-size: 15px; font-weight: 600; }
+.holdings-table { width: 100%; background: #fff; border-radius: 10px; overflow-x: auto; }
+.holdings-table table { width: 100%; border-collapse: collapse; }
+.holdings-table th { padding: 12px 10px; text-align: left; font-size: 12px; color: #999; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; }
+.holdings-table th.draggable { cursor: grab; }
+.holdings-table th.draggable:active { cursor: grabbing; }
+.holdings-table th.drag-over { background: #e8f5e9; }
+.holdings-table th.dragging { opacity: 0.4; }
+.holdings-table td { padding: 10px 10px; overflow: hidden; text-overflow: ellipsis; }
+.holdings-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f8f8f8; }
+.holdings-table tr:last-child td { border-bottom: none; }
+.holdings-table tr:hover { background: #fafafa; }
+.ticker-cell .ticker { font-weight: 600; font-size: 14px; }
+.ticker-cell .name { font-size: 12px; color: #999; }
+.type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #f0f0f0; color: #666; }
+.gain { color: #4caf50; }
+.loss { color: #f44336; }
+.editable-input { width: 60px; padding: 4px 6px; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center; font-size: 13px; outline: none; }
+.editable-input:focus { border-color: #4caf50; }
+.sector-select { padding: 4px 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px; outline: none; background: #fff; }
+.sector-select:focus { border-color: #4caf50; }
+.adjust-buy { color: #4caf50; font-weight: 600; }
+.adjust-sell { color: #f44336; font-weight: 600; }
+.delete-btn { background: none; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; color: #999; font-size: 13px; padding: 4px 10px; transition: all .2s; }
+.delete-btn:hover { color: #f44336; border-color: #f44336; background: #fef2f2; }
+
+/* Charts */
+.charts-row { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-top: 24px; }
+.chart-card { background: #fff; border-radius: 10px; padding: 20px; }
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.time-tabs { display: flex; gap: 4px; margin-bottom: 12px; justify-content: flex-end; }
+.time-tab { padding: 4px 12px; border-radius: 14px; border: none; background: #f5f5f5; cursor: pointer; font-size: 12px; color: #666; }
+.time-tab.active { background: #333; color: #fff; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.4); z-index: 100; justify-content: center; align-items: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 12px; padding: 24px; width: 440px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { margin-bottom: 16px; font-size: 16px; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
+.form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; }
+.form-group input:focus, .form-group select:focus { border-color: #4caf50; }
+.form-group .hint { font-size: 11px; color: #999; margin-top: 4px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+/* Toast */
+.toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; background: #333; color: #fff; border-radius: 8px; font-size: 13px; z-index: 200; opacity: 0; transition: opacity .3s; }
+.toast.show { opacity: 1; }
+.toast.error { background: #f44336; }
+.toast.success { background: #4caf50; }
+
+/* Sync indicator */
+.sync-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.sync-badge.synced { background: #4caf50; }
+.sync-badge.pending { background: #ff9800; }
+.sync-badge.error { background: #f44336; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>全部账户</h3>
+    <div id="accountList"></div>
+    <div class="add-account-btn" onclick="showAddAccountModal()">+ 添加组合</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="header">
+      <h1>投资组合追踪</h1>
+      <div class="header-actions">
+        <span class="update-time" id="updateTime"></span>
+        <button class="btn" onclick="refreshPrices()">刷新价格</button>
+        <button class="btn" onclick="exportData()">导出</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">导入</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <button class="btn btn-sm" onclick="showSettingsModal()" title="设置">设置</button>
+      </div>
+    </div>
+
+    <div class="account-header" id="accountHeader"></div>
+
+    <!-- Summary -->
+    <div class="summary-cards">
+      <div class="card">
+        <div class="label"><span class="icon">$</span> 总市值</div>
+        <div class="value" id="totalValue">$0.00</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="icon">$</span> 总成本</div>
+        <div class="value" id="totalCost">$0.00</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="icon">+</span> 盈亏</div>
+        <div class="value" id="totalPL">$0.00</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="icon">%</span> 盈亏比例</div>
+        <div class="value" id="totalPLPct">0.00%</div>
+      </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="table-header">
+      <h3>持仓明细</h3>
+      <button class="btn btn-primary" onclick="showAddHoldingModal()">+ 添加持仓</button>
+    </div>
+    <div class="holdings-table" id="holdingsTableWrap">
+      <table id="holdingsTable">
+        <thead><tr id="holdingsHead"></tr></thead>
+        <tbody id="holdingsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
+          <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
+          <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
+        </div>
+        <canvas id="pieChart" height="260"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>组合走势</h3>
+        <div class="time-tabs">
+          <button class="time-tab" onclick="setTimeRange('1m')">1月</button>
+          <button class="time-tab" onclick="setTimeRange('3m')">3月</button>
+          <button class="time-tab" onclick="setTimeRange('6m')">6月</button>
+          <button class="time-tab active" onclick="setTimeRange('1y')">1年</button>
+        </div>
+        <canvas id="lineChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Holding Modal -->
+<div class="modal-overlay" id="addHoldingModal">
+  <div class="modal">
+    <h3 id="holdingModalTitle">添加持仓</h3>
+    <div class="form-group" id="hAccountGroup" style="display:none">
+      <label>添加到账户</label>
+      <select id="hAccount"></select>
+    </div>
+    <div class="form-group">
+      <label>股票代码 (如 AAPL)</label>
+      <input id="hTicker" placeholder="AAPL" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>名称 (如 苹果)</label>
+      <input id="hName" placeholder="苹果">
+    </div>
+    <div class="form-group">
+      <label>类型</label>
+      <select id="hType">
+        <option value="STOCK">STOCK</option>
+        <option value="ETF">ETF</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>持仓数量</label>
+      <input id="hShares" type="number" placeholder="100">
+    </div>
+    <div class="form-group">
+      <label>成本价 (每股)</label>
+      <input id="hCost" type="number" step="0.01" placeholder="150.00">
+    </div>
+    <div class="form-group">
+      <label>板块</label>
+      <select id="hSector">
+        <option value="科技">科技</option>
+        <option value="金融">金融</option>
+        <option value="医疗">医疗</option>
+        <option value="消费">消费</option>
+        <option value="工业">工业</option>
+        <option value="能源">能源</option>
+        <option value="材料">材料</option>
+        <option value="地产">地产</option>
+        <option value="公用事业">公用事业</option>
+        <option value="通信">通信</option>
+        <option value="ETF">ETF</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addHoldingModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveHolding()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Account Modal -->
+<div class="modal-overlay" id="addAccountModal">
+  <div class="modal">
+    <h3>添加组合</h3>
+    <div class="form-group">
+      <label>组合名称</label>
+      <input id="aName" placeholder="如：us 主账户">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addAccountModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveAccount()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>GitHub 设置</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:14px;">配置后可在任何设备上访问和编辑你的持仓数据。</p>
+    <div class="form-group">
+      <label>GitHub 用户名</label>
+      <input id="sOwner" placeholder="your-username">
+    </div>
+    <div class="form-group">
+      <label>仓库名</label>
+      <input id="sRepo" placeholder="portfolio" value="portfolio">
+    </div>
+    <div class="form-group">
+      <label>Personal Access Token</label>
+      <input id="sToken" type="password" placeholder="ghp_xxxxxxxxxxxx">
+      <div class="hint">GitHub Settings > Developer settings > Personal access tokens > 创建token，勾选 repo 权限</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('settingsModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== GitHub Config ====================
+const GH_CONFIG_KEY = 'portfolio_github_config';
+
+function getGHConfig() {
+  try {
+    const raw = localStorage.getItem(GH_CONFIG_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function setGHConfig(config) {
+  localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(config));
+}
+
+// ==================== Data Layer ====================
+const STORAGE_KEY = 'portfolio_tracker_data';
+const SECTORS = ['科技','金融','医疗','消费','工业','能源','材料','地产','公用事业','通信','ETF','其他'];
+
+function getDefaultData() {
+  return {
+    accounts: [{
+      id: Date.now().toString(),
+      name: '默认组合',
+      holdings: []
+    }],
+    activeAccountId: null,
+    history: {}
+  };
+}
+
+function loadLocalData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (!d.history) d.history = {};
+      return d;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveLocalCache(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+}
+
+async function loadRemoteData() {
+  // Try loading data.json from same origin (GitHub Pages)
+  try {
+    const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const d = await res.json();
+      if (d.accounts) {
+        if (!d.history) d.history = {};
+        return d;
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function saveToGitHub(d) {
+  const config = getGHConfig();
+  if (!config || !config.token) {
+    showToast('请先配置 GitHub 设置', 'error');
+    return false;
+  }
+
+  const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/data.json`;
+  try {
+    // Get current file SHA
+    const getRes = await fetch(url, {
+      headers: { 'Authorization': `token ${config.token}` }
+    });
+    let sha = null;
+    if (getRes.ok) {
+      const file = await getRes.json();
+      sha = file.sha;
+    }
+
+    // Update file
+    const body = {
+      message: `Update data ${new Date().toISOString().slice(0,16)}`,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(d, null, 2)))),
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (putRes.ok) {
+      return true;
+    } else {
+      const err = await putRes.json();
+      console.error('GitHub API error:', err);
+      showToast('同步失败: ' + (err.message || putRes.status), 'error');
+      return false;
+    }
+  } catch(e) {
+    console.error('GitHub sync error:', e);
+    showToast('同步失败: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function saveData(d) {
+  saveLocalCache(d);
+  // Debounce GitHub saves
+  if (saveData._timer) clearTimeout(saveData._timer);
+  saveData._timer = setTimeout(async () => {
+    const config = getGHConfig();
+    if (config && config.token) {
+      const ok = await saveToGitHub(d);
+      if (ok) {
+        document.getElementById('updateTime').textContent +=  ' (已同步)';
+      }
+    }
+  }, 2000);
+}
+
+let data = getDefaultData();
+
+async function initData() {
+  // Try remote first (GitHub Pages), then local cache, then default
+  const remote = await loadRemoteData();
+  if (remote) {
+    data = remote;
+    saveLocalCache(data);
+  } else {
+    const local = loadLocalData();
+    if (local) data = local;
+  }
+
+  if (!data.activeAccountId && data.accounts.length > 0) {
+    data.activeAccountId = data.accounts[0].id;
+  }
+
+  renderAll();
+
+  // Show settings if not configured
+  const config = getGHConfig();
+  if (!config || !config.token) {
+    showSettingsModal();
+  }
+}
+
+// ==================== Data Helpers ====================
+function isAllView() {
+  return data.activeAccountId === '__all__';
+}
+
+function getActiveAccount() {
+  if (isAllView()) return null;
+  return data.accounts.find(a => a.id === data.activeAccountId) || data.accounts[0];
+}
+
+function getAllHoldings() {
+  const all = [];
+  data.accounts.forEach(a => {
+    a.holdings.forEach((h, idx) => {
+      all.push({ ...h, _accountName: a.name, _accountId: a.id, _holdingIdx: idx });
+    });
+  });
+  return all;
+}
+
+function getViewHoldings() {
+  if (isAllView()) return getAllHoldings();
+  const acc = getActiveAccount();
+  return acc ? acc.holdings.map((h, idx) => ({ ...h, _accountId: acc.id, _holdingIdx: idx })) : [];
+}
+
+// ==================== Price Fetching ====================
+async function triggerGitHubAction() {
+  const config = getGHConfig();
+  if (!config || !config.token) return false;
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${config.owner}/${config.repo}/actions/workflows/update.yml/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${config.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+    return res.status === 204;
+  } catch(e) {
+    return false;
+  }
+}
+
+async function refreshPrices() {
+  const allHoldings = [];
+  data.accounts.forEach(a => a.holdings.forEach(h => allHoldings.push(h)));
+
+  if (allHoldings.length === 0) {
+    showToast('没有持仓需要刷新', 'error');
+    return;
+  }
+
+  showToast('正在触发价格更新...');
+
+  // Trigger GitHub Actions workflow
+  const triggered = await triggerGitHubAction();
+  if (triggered) {
+    showToast('已触发自动更新，约1分钟后刷新页面查看结果', 'success');
+    // Wait and reload data after 60 seconds
+    setTimeout(async () => {
+      const remote = await loadRemoteData();
+      if (remote) {
+        data = remote;
+        saveLocalCache(data);
+        renderAll();
+        showToast('价格已更新', 'success');
+      }
+    }, 65000);
+  } else {
+    showToast('触发失败，请检查 GitHub 设置或手动在 GitHub Actions 中运行', 'error');
+  }
+}
+
+function recordHistoryForAccount(account) {
+  const today = new Date().toISOString().slice(0, 10);
+  const totalVal = account.holdings.reduce((s, h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+
+  if (!data.history[account.id]) data.history[account.id] = [];
+  const hist = data.history[account.id];
+  const existing = hist.findIndex(h => h.date === today);
+  if (existing >= 0) {
+    hist[existing].value = totalVal;
+  } else {
+    hist.push({ date: today, value: totalVal });
+  }
+  if (hist.length > 365) hist.splice(0, hist.length - 365);
+}
+
+// ==================== Rendering ====================
+function renderAll() {
+  renderSidebar();
+  renderSummary();
+  renderTable();
+  renderPieChart();
+  renderLineChart();
+  renderUpdateTime();
+}
+
+function renderSidebar() {
+  const list = document.getElementById('accountList');
+  let totalAll = 0, plAll = 0;
+  data.accounts.forEach(a => {
+    const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+    const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
+    totalAll += tv;
+    plAll += (tv - tc);
+  });
+
+  let html = `<div class="account-item ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()" style="border-bottom:1px solid #f0f0f0;margin-bottom:4px;padding-bottom:12px;">
+    <div class="name">全部账户</div>
+    <div class="info">$${fmt(totalAll)} <span class="${plAll >= 0 ? 'gain' : 'loss'}">${plAll >= 0 ? '+' : ''}$${fmt(Math.abs(plAll))}</span></div>
+  </div>`;
+
+  data.accounts.forEach(a => {
+    const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+    const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
+    const pl = tv - tc;
+    const plPct = tc > 0 ? (pl / tc * 100) : 0;
+    html += `<div class="account-item ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')">
+      <div class="name">${escHtml(a.name)}</div>
+      <div class="info">$${fmt(tv)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function renderSummary() {
+  const holdings = getViewHoldings();
+
+  const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+  const totalCost = holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
+  const pl = totalVal - totalCost;
+  const plPct = totalCost > 0 ? (pl / totalCost * 100) : 0;
+
+  document.getElementById('totalValue').textContent = `$${fmt(totalVal)}`;
+  document.getElementById('totalCost').textContent = `$${fmt(totalCost)}`;
+
+  const plEl = document.getElementById('totalPL');
+  plEl.textContent = `${pl >= 0 ? '+' : ''}$${fmt(Math.abs(pl))}`;
+  plEl.className = `value ${pl >= 0 ? 'gain' : 'loss'}`;
+
+  const pctEl = document.getElementById('totalPLPct');
+  pctEl.textContent = `${pl >= 0 ? '+' : ''}${plPct.toFixed(2)}%`;
+  pctEl.className = `value ${pl >= 0 ? 'gain' : 'loss'}`;
+
+  if (isAllView()) {
+    document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
+  } else {
+    const account = getActiveAccount();
+    document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
+  }
+}
+
+// ==================== Column System ====================
+const BASE_COLUMNS = [
+  { id: 'type', label: '类型', w: 70 },
+  { id: 'shares', label: '持仓数量', w: 90 },
+  { id: 'cost', label: '成本', w: 90 },
+  { id: 'price', label: '现价', w: 90 },
+  { id: 'mv', label: '市值', w: 110 },
+  { id: 'pl', label: '盈亏', w: 100 },
+  { id: 'plpct', label: '盈亏%', w: 85 },
+  { id: 'weight', label: '占比', w: 65 },
+  { id: 'target', label: '目标%', w: 75 },
+  { id: 'adjust', label: '调整(股)', w: 80 },
+  { id: 'sector', label: '板块', w: 85 },
+];
+
+function getColumnOrder() {
+  try {
+    const saved = localStorage.getItem('portfolio_col_order');
+    if (saved) {
+      const arr = JSON.parse(saved);
+      const baseIds = BASE_COLUMNS.map(c => c.id);
+      if (baseIds.every(id => arr.includes(id)) && arr.length === baseIds.length) return arr;
+    }
+  } catch(e) {}
+  return BASE_COLUMNS.map(c => c.id);
+}
+function saveColumnOrder(order) { localStorage.setItem('portfolio_col_order', JSON.stringify(order)); }
+
+let colOrder = getColumnOrder();
+
+function getCellHtml(colId, h, accId, idx, totalVal) {
+  const mv = h.shares * (h.currentPrice || h.costPerShare);
+  const pl = mv - h.shares * h.costPerShare;
+  const plPct = h.costPerShare > 0 ? ((h.currentPrice || h.costPerShare) / h.costPerShare - 1) * 100 : 0;
+  const weight = totalVal > 0 ? (mv / totalVal * 100) : 0;
+  let adjustText = '-', adjustClass = '';
+  if (h.targetPct != null && h.targetPct !== '' && (h.currentPrice || h.costPerShare) > 0) {
+    const ts = (h.targetPct / 100 * totalVal) / (h.currentPrice || h.costPerShare);
+    const diff = Math.round(ts - h.shares);
+    if (diff > 0) { adjustText = `+${diff}`; adjustClass = 'adjust-buy'; }
+    else if (diff < 0) { adjustText = `${diff}`; adjustClass = 'adjust-sell'; }
+    else { adjustText = '0'; }
+  }
+  switch(colId) {
+    case 'account': return `<td><span style="font-size:12px;color:#888;background:#f5f5f5;padding:2px 8px;border-radius:4px;">${escHtml(h._accountName)}</span></td>`;
+    case 'type': return `<td><span class="type-badge">${h.type || 'STOCK'}</span></td>`;
+    case 'shares': return `<td><input class="editable-input" type="number" step="1" min="0" value="${h.shares}" onchange="updateFieldByRef('${accId}',${idx},'shares',this.value)" style="width:70px"></td>`;
+    case 'cost': return `<td><input class="editable-input" type="number" step="0.01" min="0" value="${h.costPerShare}" onchange="updateFieldByRef('${accId}',${idx},'costPerShare',this.value)" style="width:80px"></td>`;
+    case 'price': return `<td>$${fmt(h.currentPrice || h.costPerShare)}</td>`;
+    case 'mv': return `<td>$${fmt(mv)}</td>`;
+    case 'pl': return `<td class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}$${fmt(Math.abs(pl))}</td>`;
+    case 'plpct': return `<td class="${plPct >= 0 ? 'gain' : 'loss'}">${plPct >= 0 ? '+' : ''}${plPct.toFixed(2)}%</td>`;
+    case 'weight': return `<td>${weight.toFixed(1)}%</td>`;
+    case 'target': return `<td><input class="editable-input" type="number" step="0.1" min="0" max="100" value="${h.targetPct ?? ''}" placeholder="—" onchange="updateTargetByRef('${accId}',${idx},this.value)"></td>`;
+    case 'adjust': return `<td class="${adjustClass}">${adjustText}</td>`;
+    case 'sector': return `<td><select class="sector-select" onchange="updateSectorByRef('${accId}',${idx},this.value)">${SECTORS.map(s => `<option value="${s}" ${h.sector === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>`;
+    default: return '<td></td>';
+  }
+}
+
+function renderTable() {
+  const headTr = document.getElementById('holdingsHead');
+  const tbody = document.getElementById('holdingsBody');
+  const holdings = getViewHoldings();
+  const allView = isAllView();
+  const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+
+  const activeCols = ['ticker'];
+  if (allView) activeCols.push('account');
+  colOrder.forEach(id => activeCols.push(id));
+  activeCols.push('_delete');
+
+  let headHtml = '<th>代码/名称</th>';
+  if (allView) headHtml += '<th>账户</th>';
+  colOrder.forEach(id => {
+    const col = BASE_COLUMNS.find(c => c.id === id);
+    headHtml += `<th class="draggable" draggable="true" data-col="${id}">${col.label}</th>`;
+  });
+  headHtml += '<th style="width:40px"></th>';
+  headTr.innerHTML = headHtml;
+
+  if (holdings.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${activeCols.length}" style="text-align:center;padding:40px;color:#999;">暂无持仓，点击"添加持仓"开始</td></tr>`;
+  } else {
+    let html = '';
+    holdings.forEach(h => {
+      const accId = h._accountId, idx = h._holdingIdx;
+      html += '<tr>';
+      html += `<td class="ticker-cell"><div class="ticker">${escHtml(h.ticker)}</div><div class="name">${escHtml(h.name || '')}</div></td>`;
+      if (allView) html += getCellHtml('account', h, accId, idx, totalVal);
+      colOrder.forEach(id => { html += getCellHtml(id, h, accId, idx, totalVal); });
+      html += `<td><button class="delete-btn" onclick="deleteHoldingByRef('${accId}',${idx})" title="删除">x</button></td>`;
+      html += '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  initTableInteractions();
+}
+
+function initTableInteractions() {
+  const headTr = document.getElementById('holdingsHead');
+  let dragSrcCol = null;
+
+  headTr.querySelectorAll('th.draggable').forEach(th => {
+    th.addEventListener('dragstart', (e) => {
+      dragSrcCol = th.dataset.col;
+      th.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragSrcCol);
+    });
+    th.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; th.classList.add('drag-over'); });
+    th.addEventListener('dragleave', () => { th.classList.remove('drag-over'); });
+    th.addEventListener('drop', (e) => {
+      e.preventDefault();
+      th.classList.remove('drag-over');
+      const targetCol = th.dataset.col;
+      if (dragSrcCol && dragSrcCol !== targetCol) {
+        const srcIdx = colOrder.indexOf(dragSrcCol);
+        const tgtIdx = colOrder.indexOf(targetCol);
+        if (srcIdx >= 0 && tgtIdx >= 0) {
+          colOrder.splice(srcIdx, 1);
+          colOrder.splice(tgtIdx, 0, dragSrcCol);
+          saveColumnOrder(colOrder);
+          renderTable();
+        }
+      }
+    });
+    th.addEventListener('dragend', () => {
+      th.classList.remove('dragging');
+      headTr.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      dragSrcCol = null;
+    });
+  });
+}
+
+// ==================== Charts ====================
+let pieChart = null, lineChart = null;
+let pieMode = 'holding';
+
+function setPieMode(mode) {
+  pieMode = mode;
+  document.getElementById('pieTabHolding').classList.toggle('active', mode === 'holding');
+  document.getElementById('pieTabSector').classList.toggle('active', mode === 'sector');
+  renderPieChart();
+}
+
+function renderPieChart() {
+  const holdings = getViewHoldings();
+  if (holdings.length === 0) {
+    if (pieChart) { pieChart.destroy(); pieChart = null; }
+    return;
+  }
+
+  const colors = ['#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac','#a0cbe8','#ffbe7d'];
+  let labels, values, totalVal;
+
+  if (pieMode === 'sector') {
+    const sectorMap = {};
+    holdings.forEach(h => {
+      const sec = h.sector || '其他';
+      const val = h.shares * (h.currentPrice || h.costPerShare);
+      sectorMap[sec] = (sectorMap[sec] || 0) + val;
+    });
+    const entries = Object.entries(sectorMap).sort((a,b) => b[1] - a[1]);
+    labels = entries.map(e => e[0]);
+    values = entries.map(e => e[1]);
+    totalVal = values.reduce((s,v) => s + v, 0);
+  } else {
+    totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+    labels = holdings.map(h => isAllView() && h._accountName ? `${h.ticker}(${h._accountName})` : h.ticker);
+    values = holdings.map(h => h.shares * (h.currentPrice || h.costPerShare));
+  }
+
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if (pieChart) pieChart.destroy();
+
+  pieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 12 }, generateLabels: (chart) => { const ds = chart.data.datasets[0]; return chart.data.labels.map((l,i) => { const pct = totalVal > 0 ? (ds.data[i] / totalVal * 100).toFixed(1) : '0.0'; return { text: `${l} ${pct}%`, fillStyle: ds.backgroundColor[i], strokeStyle: ds.backgroundColor[i], hidden: !chart.getDataVisibility(i), index: i }; }); } } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const pct = totalVal > 0 ? (ctx.parsed / totalVal * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: $${fmt(ctx.parsed)} (${pct}%)`;
+            }
+          }
+        }
+      },
+      cutout: '55%'
+    }
+  });
+}
+
+let currentTimeRange = '1y';
+function setTimeRange(range) {
+  currentTimeRange = range;
+  document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderLineChart();
+}
+
+function renderLineChart() {
+  let hist;
+  if (isAllView()) {
+    const dateMap = {};
+    data.accounts.forEach(a => {
+      (data.history[a.id] || []).forEach(h => {
+        dateMap[h.date] = (dateMap[h.date] || 0) + h.value;
+      });
+    });
+    hist = Object.entries(dateMap).map(([date, value]) => ({ date, value }));
+  } else {
+    const account = getActiveAccount();
+    hist = data.history[account?.id] || [];
+  }
+
+  if (hist.length === 0) {
+    if (lineChart) { lineChart.destroy(); lineChart = null; }
+    return;
+  }
+
+  const now = new Date();
+  let cutoff = new Date();
+  if (currentTimeRange === '1m') cutoff.setMonth(now.getMonth() - 1);
+  else if (currentTimeRange === '3m') cutoff.setMonth(now.getMonth() - 3);
+  else if (currentTimeRange === '6m') cutoff.setMonth(now.getMonth() - 6);
+  else cutoff.setFullYear(now.getFullYear() - 1);
+
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const filtered = hist.filter(h => h.date >= cutoffStr).sort((a,b) => a.date.localeCompare(b.date));
+
+  if (filtered.length === 0) {
+    if (lineChart) { lineChart.destroy(); lineChart = null; }
+    return;
+  }
+
+  const ctx = document.getElementById('lineChart').getContext('2d');
+  if (lineChart) lineChart.destroy();
+
+  lineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: filtered.map(h => h.date.slice(5)),
+      datasets: [{
+        data: filtered.map(h => h.value),
+        borderColor: '#4e79a7',
+        backgroundColor: 'rgba(78,121,167,0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: filtered.length > 30 ? 0 : 3,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: (ctx) => `$${fmt(ctx.parsed.y)}` }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+        y: {
+          grid: { color: '#f0f0f0' },
+          ticks: { callback: v => `$${(v/1000).toFixed(0)}K`, font: { size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+function renderUpdateTime() {
+  const el = document.getElementById('updateTime');
+  if (data.lastUpdate) {
+    const d = new Date(data.lastUpdate);
+    el.textContent = `更新于 ${d.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+  }
+}
+
+// ==================== Actions ====================
+function selectAccount(id) {
+  data.activeAccountId = id;
+  saveLocalCache(data);
+  renderAll();
+}
+
+function selectAllAccounts() {
+  data.activeAccountId = '__all__';
+  saveLocalCache(data);
+  renderAll();
+}
+
+function showAddHoldingModal() {
+  document.getElementById('holdingModalTitle').textContent = '添加持仓';
+  ['hTicker','hName','hShares','hCost'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('hType').value = 'STOCK';
+  document.getElementById('hSector').value = '科技';
+  const accGroup = document.getElementById('hAccountGroup');
+  const accSelect = document.getElementById('hAccount');
+  if (isAllView()) {
+    accGroup.style.display = '';
+    accSelect.innerHTML = data.accounts.map(a => `<option value="${a.id}">${escHtml(a.name)}</option>`).join('');
+  } else {
+    accGroup.style.display = 'none';
+  }
+  document.getElementById('addHoldingModal').classList.add('show');
+}
+
+function showAddAccountModal() {
+  document.getElementById('aName').value = '';
+  document.getElementById('addAccountModal').classList.add('show');
+}
+
+function showSettingsModal() {
+  const config = getGHConfig() || {};
+  document.getElementById('sOwner').value = config.owner || '';
+  document.getElementById('sRepo').value = config.repo || 'portfolio';
+  document.getElementById('sToken').value = config.token || '';
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function saveSettings() {
+  const owner = document.getElementById('sOwner').value.trim();
+  const repo = document.getElementById('sRepo').value.trim();
+  const token = document.getElementById('sToken').value.trim();
+
+  if (!owner || !repo || !token) {
+    showToast('请填写完整信息', 'error');
+    return;
+  }
+
+  setGHConfig({ owner, repo, token });
+  closeModal('settingsModal');
+  showToast('GitHub 设置已保存', 'success');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function saveHolding() {
+  const ticker = document.getElementById('hTicker').value.trim().toUpperCase();
+  const name = document.getElementById('hName').value.trim();
+  const type = document.getElementById('hType').value;
+  const shares = parseFloat(document.getElementById('hShares').value);
+  const cost = parseFloat(document.getElementById('hCost').value);
+  const sector = document.getElementById('hSector').value;
+
+  if (!ticker || !shares || !cost) {
+    showToast('请填写完整信息', 'error');
+    return;
+  }
+
+  let account;
+  if (isAllView()) {
+    const accId = document.getElementById('hAccount').value;
+    account = data.accounts.find(a => a.id === accId);
+  } else {
+    account = getActiveAccount();
+  }
+  if (!account) { showToast('请选择账户', 'error'); return; }
+
+  account.holdings.push({
+    ticker, name, type, shares, costPerShare: cost,
+    currentPrice: cost, targetPct: null, sector
+  });
+
+  saveData(data);
+  closeModal('addHoldingModal');
+  renderAll();
+  showToast(`已添加 ${ticker} 到 ${account.name}`, 'success');
+}
+
+function saveAccount() {
+  const name = document.getElementById('aName').value.trim();
+  if (!name) { showToast('请输入组合名称', 'error'); return; }
+
+  const newAcc = { id: Date.now().toString(), name, holdings: [] };
+  data.accounts.push(newAcc);
+  data.activeAccountId = newAcc.id;
+  saveData(data);
+  closeModal('addAccountModal');
+  renderAll();
+  showToast(`已创建 ${name}`, 'success');
+}
+
+function deleteHoldingByRef(accountId, index) {
+  const account = data.accounts.find(a => a.id === accountId);
+  if (!account) return;
+  const ticker = account.holdings[index].ticker;
+  if (!confirm(`确定删除 ${ticker}？`)) return;
+  account.holdings.splice(index, 1);
+  saveData(data);
+  renderAll();
+}
+
+function updateTargetByRef(accountId, index, value) {
+  const account = data.accounts.find(a => a.id === accountId);
+  if (!account) return;
+  account.holdings[index].targetPct = value === '' ? null : parseFloat(value);
+  saveData(data);
+  renderTable();
+}
+
+function updateSectorByRef(accountId, index, value) {
+  const account = data.accounts.find(a => a.id === accountId);
+  if (!account) return;
+  account.holdings[index].sector = value;
+  saveData(data);
+}
+
+function updateFieldByRef(accountId, index, field, value) {
+  const account = data.accounts.find(a => a.id === accountId);
+  if (!account) return;
+  const num = parseFloat(value);
+  if (isNaN(num) || num < 0) return;
+  account.holdings[index][field] = num;
+  saveData(data);
+  renderAll();
+}
+
+function accountContextMenu(e, id) {
+  e.preventDefault();
+  if (data.accounts.length <= 1) { showToast('至少保留一个组合', 'error'); return; }
+  const acc = data.accounts.find(a => a.id === id);
+  if (confirm(`确定删除组合「${acc.name}」？`)) {
+    data.accounts = data.accounts.filter(a => a.id !== id);
+    if (data.activeAccountId === id) data.activeAccountId = data.accounts[0].id;
+    saveData(data);
+    renderAll();
+  }
+}
+
+// ==================== Import/Export ====================
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `portfolio_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.accounts) {
+        data = imported;
+        if (!data.history) data.history = {};
+        if (!data.activeAccountId && data.accounts.length > 0) data.activeAccountId = data.accounts[0].id;
+        saveData(data);
+        renderAll();
+        showToast('导入成功', 'success');
+      } else {
+        showToast('无效的数据文件', 'error');
+      }
+    } catch(e) {
+      showToast('文件解析失败', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ==================== Utilities ====================
+function fmt(n) {
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('show'); });
+});
+
+// ==================== Initialize ====================
+initData();
+</script>
+</body>
+</html>

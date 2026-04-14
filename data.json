@@ -1,0 +1,40 @@
+{
+  "accounts": [
+    {
+      "id": "1",
+      "name": "测试组合",
+      "holdings": [
+        {
+          "ticker": "AAPL",
+          "name": "苹果",
+          "type": "STOCK",
+          "shares": 10,
+          "costPerShare": 200,
+          "currentPrice": 258.36,
+          "targetPct": null,
+          "sector": "科技"
+        },
+        {
+          "ticker": "AMD",
+          "name": "AMD",
+          "type": "STOCK",
+          "shares": 5,
+          "costPerShare": 150,
+          "currentPrice": 255.15,
+          "targetPct": null,
+          "sector": "科技"
+        }
+      ]
+    }
+  ],
+  "activeAccountId": "1",
+  "history": {
+    "1": [
+      {
+        "date": "2026-04-14",
+        "value": 3859.3500000000004
+      }
+    ]
+  },
+  "lastUpdate": "2026-04-14T19:33:13.229381+00:00"
+}
