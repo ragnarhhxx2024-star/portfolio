@@ -91,7 +91,7 @@
           "shares": 1,
           "costPerShare": 523.31,
           "currentPrice": 662.49,
-          "targetPct": null,
+          "targetPct": 5,
           "sector": "社交媒体"
         },
         {
@@ -193,5 +193,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T01:24:17.192Z"
+  "lastUpdate": "2026-04-15T01:24:19.734Z"
 }
