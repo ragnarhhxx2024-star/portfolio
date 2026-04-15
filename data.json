@@ -160,7 +160,7 @@
           "sector": "AI"
         }
       ],
-      "cash": 56.63
+      "cash": 561
     }
   ],
   "activeAccountId": "ibkr",
@@ -196,5 +196,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T23:54:30.726Z"
+  "lastUpdate": "2026-04-15T23:56:22.037Z"
 }
