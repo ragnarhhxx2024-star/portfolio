@@ -138,9 +138,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   .card .value { font-size: 17px; }
   #cashInput { width: 80px !important; font-size: 15px !important; }
 
-  /* Table → horizontal scroll */
+  /* Table → horizontal scroll with sticky first column */
   .holdings-table { overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
   .holdings-table table { table-layout: auto; min-width: 800px; }
+  .holdings-table th:first-child,
+  .holdings-table td:first-child { position: sticky; left: 0; background: #fff; z-index: 2; min-width: 90px; box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+  .holdings-table tr:hover td:first-child { background: #fafafa; }
+  .holdings-table tr.cash-row td:first-child { background: #f0faf3; }
 
   /* Charts → stack vertically */
   .charts-row { grid-template-columns: 1fr; gap: 16px; }
