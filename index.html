@@ -415,7 +415,7 @@ async function saveToGitHub(d) {
 
   const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/data.json`;
   try {
-    // Get current file SHA
+    // Get current file SHA and content
     const getRes = await fetch(url, {
       headers: { 'Authorization': `token ${config.token}` }
     });
@@ -423,6 +423,39 @@ async function saveToGitHub(d) {
     if (getRes.ok) {
       const file = await getRes.json();
       sha = file.sha;
+      // Merge remote prices and history to avoid overwriting GitHub Actions updates
+      try {
+        const remoteData = JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g, '')))));
+        if (remoteData && remoteData.accounts) {
+          // Build ticker->price map from remote
+          const remotePrices = {};
+          remoteData.accounts.forEach(a => a.holdings.forEach(h => {
+            if (h.currentPrice) remotePrices[h.ticker] = h.currentPrice;
+          }));
+          // Update local holdings: keep remote price if local hasn't changed it
+          d.accounts.forEach(a => a.holdings.forEach(h => {
+            if (!h._priceEditedLocally && remotePrices[h.ticker]) {
+              h.currentPrice = remotePrices[h.ticker];
+            }
+          }));
+          // Merge history: keep longer/newer entries from remote
+          if (remoteData.history) {
+            Object.keys(remoteData.history).forEach(accId => {
+              if (!d.history[accId]) {
+                d.history[accId] = remoteData.history[accId];
+              } else {
+                const localDates = new Set(d.history[accId].map(h => h.date));
+                remoteData.history[accId].forEach(rh => {
+                  if (!localDates.has(rh.date)) d.history[accId].push(rh);
+                });
+                d.history[accId].sort((a, b) => a.date.localeCompare(b.date));
+              }
+            });
+          }
+        }
+      } catch(mergeErr) {
+        console.warn('Merge remote data failed, saving local as-is:', mergeErr);
+      }
     }
 
     // Update file
@@ -561,17 +594,55 @@ async function refreshPrices() {
   // Trigger GitHub Actions workflow
   const triggered = await triggerGitHubAction();
   if (triggered) {
-    showToast('已触发自动更新，约1分钟后刷新页面查看结果', 'success');
-    // Wait and reload data after 60 seconds
-    setTimeout(async () => {
-      const remote = await loadRemoteData();
-      if (remote) {
-        data = remote;
-        saveLocalCache(data);
-        renderAll();
-        showToast('价格已更新', 'success');
+    showToast('已触发自动更新，正在等待完成...', 'success');
+    // Poll remote data.json for updated lastUpdate timestamp
+    const oldUpdate = data.lastUpdate || '';
+    let attempts = 0;
+    const maxAttempts = 12; // 12 x 15s = 3 minutes max
+    const pollInterval = 15000;
+    const poll = async () => {
+      attempts++;
+      try {
+        const remote = await loadRemoteData();
+        if (remote && remote.lastUpdate && remote.lastUpdate > oldUpdate) {
+          // Remote data has been updated by Actions — apply it
+          // Preserve local edits (shares, cost, sector, target) while taking remote prices
+          const remotePrices = {};
+          remote.accounts.forEach(a => a.holdings.forEach(h => {
+            if (h.currentPrice) remotePrices[h.ticker] = h.currentPrice;
+          }));
+          data.accounts.forEach(a => a.holdings.forEach(h => {
+            if (remotePrices[h.ticker]) h.currentPrice = remotePrices[h.ticker];
+          }));
+          // Merge history from remote
+          if (remote.history) {
+            Object.keys(remote.history).forEach(accId => {
+              if (!data.history[accId]) {
+                data.history[accId] = remote.history[accId];
+              } else {
+                const localDates = new Set(data.history[accId].map(h => h.date));
+                remote.history[accId].forEach(rh => {
+                  if (!localDates.has(rh.date)) data.history[accId].push(rh);
+                });
+                data.history[accId].sort((a, b) => a.date.localeCompare(b.date));
+              }
+            });
+          }
+          data.lastUpdate = remote.lastUpdate;
+          saveLocalCache(data);
+          renderAll();
+          showToast('价格已更新', 'success');
+          return;
+        }
+      } catch(e) {}
+      if (attempts < maxAttempts) {
+        showToast(`等待价格更新中... (${attempts}/${maxAttempts})`, 'success');
+        setTimeout(poll, pollInterval);
+      } else {
+        showToast('更新超时，请稍后手动刷新页面', 'error');
       }
-    }, 65000);
+    };
+    setTimeout(poll, 30000); // First check after 30s (Actions needs startup time)
   } else {
     showToast('触发失败，请检查 GitHub 设置或手动在 GitHub Actions 中运行', 'error');
   }
