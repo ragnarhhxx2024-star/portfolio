@@ -101,7 +101,7 @@
           "shares": 2,
           "costPerShare": 265.995,
           "currentPrice": 296.61,
-          "targetPct": 3,
+          "targetPct": 5,
           "sector": "能源"
         },
         {
@@ -194,5 +194,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T05:12:09.932Z"
+  "lastUpdate": "2026-04-15T05:12:53.137Z"
 }
