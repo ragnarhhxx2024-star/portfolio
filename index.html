@@ -124,7 +124,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   .add-account-btn { margin: 0; padding: 6px 10px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
 
   /* Main area */
-  .main { padding: 16px 12px; overflow-x: hidden; }
+  .main { padding: 16px 12px; overflow: visible; }
 
   /* Header wrap */
   .header { flex-wrap: wrap; gap: 8px; }
@@ -139,12 +139,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   #cashInput { width: 80px !important; font-size: 15px !important; }
 
   /* Table → horizontal scroll with sticky first column */
-  .holdings-table { overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
-  .holdings-table table { table-layout: auto; min-width: 800px; }
+  .holdings-table { overflow-x: auto !important; overflow-y: visible !important; -webkit-overflow-scrolling: touch; }
+  .holdings-table table { table-layout: auto; min-width: 800px; border-collapse: separate; border-spacing: 0; }
   .holdings-table th:first-child,
-  .holdings-table td:first-child { position: sticky; left: 0; background: #fff; z-index: 2; min-width: 90px; box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+  .holdings-table td:first-child { position: -webkit-sticky; position: sticky; left: 0; background: #fff; z-index: 2; min-width: 100px; box-shadow: 2px 0 4px rgba(0,0,0,.08); }
+  .holdings-table thead th:first-child { background: #fff; z-index: 3; }
   .holdings-table tr:hover td:first-child { background: #fafafa; }
-  .holdings-table tr.cash-row td:first-child { background: #f0faf3; }
 
   /* Charts → stack vertically */
   .charts-row { grid-template-columns: 1fr; gap: 16px; }
