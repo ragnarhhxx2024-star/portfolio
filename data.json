@@ -101,7 +101,7 @@
           "shares": 2,
           "costPerShare": 265.995,
           "currentPrice": 296.61,
-          "targetPct": null,
+          "targetPct": 5,
           "sector": "能源"
         },
         {
@@ -172,7 +172,7 @@
       "cash": 56.63
     }
   ],
-  "activeAccountId": "__all__",
+  "activeAccountId": "hk",
   "history": {
     "hk": [
       {
@@ -193,5 +193,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T01:24:19.734Z"
+  "lastUpdate": "2026-04-15T01:24:25.137Z"
 }
