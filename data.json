@@ -10,7 +10,7 @@
           "type": "STOCK",
           "shares": 40,
           "costPerShare": 142.977,
-          "currentPrice": 255.07,
+          "currentPrice": 256.2,
           "targetPct": 30,
           "sector": "半导体"
         },
@@ -20,7 +20,7 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 165.047,
-          "currentPrice": 163,
+          "currentPrice": 171.67,
           "targetPct": 10,
           "sector": "数据中心"
         },
@@ -30,7 +30,7 @@
           "type": "STOCK",
           "shares": 90,
           "costPerShare": 36.16,
-          "currentPrice": 21.36,
+          "currentPrice": 21.865,
           "targetPct": 5,
           "sector": "医疗"
         },
@@ -40,7 +40,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 264.234,
-          "currentPrice": 184.41,
+          "currentPrice": 191.108,
           "targetPct": 5,
           "sector": "加密货币"
         },
@@ -50,7 +50,7 @@
           "type": "STOCK",
           "shares": 14,
           "costPerShare": 70.557,
-          "currentPrice": 105.49,
+          "currentPrice": 105.795,
           "targetPct": 5,
           "sector": "加密货币"
         },
@@ -60,7 +60,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 145.083,
-          "currentPrice": 135.7,
+          "currentPrice": 138.9801,
           "targetPct": 5,
           "sector": "AI"
         },
@@ -70,7 +70,7 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 185.982,
-          "currentPrice": 91.46,
+          "currentPrice": 97.285,
           "targetPct": 5,
           "sector": "软件"
         },
@@ -80,7 +80,7 @@
           "type": "STOCK",
           "shares": 15,
           "costPerShare": 50.43,
-          "currentPrice": 62.47,
+          "currentPrice": 64.475,
           "targetPct": 5,
           "sector": "金融科技"
         },
@@ -90,7 +90,7 @@
           "type": "STOCK",
           "shares": 1,
           "costPerShare": 523.31,
-          "currentPrice": 662.49,
+          "currentPrice": 673.6501,
           "targetPct": 0,
           "sector": "社交媒体"
         },
@@ -100,7 +100,7 @@
           "type": "STOCK",
           "shares": 2,
           "costPerShare": 265.995,
-          "currentPrice": 296.61,
+          "currentPrice": 298.13,
           "targetPct": 5,
           "sector": "能源"
         },
@@ -110,7 +110,7 @@
           "type": "STOCK",
           "shares": 6,
           "costPerShare": 63.825,
-          "currentPrice": 68.9,
+          "currentPrice": 69.02,
           "targetPct": 5,
           "sector": "消费"
         }
@@ -128,7 +128,7 @@
           "type": "ETF",
           "shares": 16,
           "costPerShare": 61.625,
-          "currentPrice": 42.13,
+          "currentPrice": 42.0503,
           "targetPct": null,
           "sector": "加密货币"
         }
@@ -145,7 +145,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 63.84,
-          "currentPrice": 58.3,
+          "currentPrice": 60.65,
           "targetPct": null,
           "sector": "软件"
         },
@@ -155,7 +155,7 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 50.41,
-          "currentPrice": 49.53,
+          "currentPrice": 54.77,
           "targetPct": null,
           "sector": "AI"
         },
@@ -165,7 +165,7 @@
           "type": "STOCK",
           "shares": 2,
           "costPerShare": 156.72,
-          "currentPrice": 255.07,
+          "currentPrice": 256.2,
           "targetPct": null,
           "sector": "半导体"
         }
@@ -179,20 +179,32 @@
       {
         "date": "2026-04-14",
         "value": 22717.3
+      },
+      {
+        "date": "2026-04-15",
+        "value": 23145.431099999998
       }
     ],
     "sg": [
       {
         "date": "2026-04-14",
         "value": 674.08
+      },
+      {
+        "date": "2026-04-15",
+        "value": 672.8048
       }
     ],
     "ibkr": [
       {
         "date": "2026-04-14",
         "value": 1588.44
+      },
+      {
+        "date": "2026-04-15",
+        "value": 1666.6
       }
     ]
   },
-  "lastUpdate": "2026-04-15T05:13:46.794Z"
+  "lastUpdate": "2026-04-15T15:04:06.337726+00:00"
 }
