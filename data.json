@@ -20,7 +20,7 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 165.047,
-          "currentPrice": 163.0,
+          "currentPrice": 163,
           "targetPct": null,
           "sector": "数据中心"
         },
@@ -114,7 +114,8 @@
           "targetPct": null,
           "sector": "消费"
         }
-      ]
+      ],
+      "cash": 4681
     },
     {
       "id": "sg",
@@ -192,5 +193,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-14T22:37:34.114684+00:00"
+  "lastUpdate": "2026-04-15T00:40:41.238Z"
 }
