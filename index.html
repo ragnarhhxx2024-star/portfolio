@@ -8,8 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
-.container { display: flex; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; overflow-x: hidden; }
+.container { display: flex; min-height: 100vh; max-width: 100vw; overflow: hidden; }
 
 /* Sidebar */
 .sidebar { width: 200px; background: #fff; border-right: 1px solid #eee; padding: 20px 8px; flex-shrink: 0; }
@@ -26,7 +26,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .add-account-btn:hover { border-color: #4caf50; color: #4caf50; }
 
 /* Main */
-.main { flex: 1; padding: 24px 32px; overflow-x: auto; }
+.main { flex: 1; padding: 24px 20px; overflow: hidden; min-width: 0; }
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .header h1 { font-size: 20px; font-weight: 700; }
 .header-actions { display: flex; gap: 8px; align-items: center; }
@@ -40,11 +40,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
-.card { background: #fff; border-radius: 10px; padding: 18px 20px; }
+.summary-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+.card { background: #fff; border-radius: 10px; padding: 14px 16px; }
 .card .label { font-size: 12px; color: #999; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .card .label .icon { font-size: 16px; }
-.card .value { font-size: 22px; font-weight: 700; }
+.card .value { font-size: 20px; font-weight: 700; }
 .card .value.gain { color: #4caf50; }
 .card .value.loss { color: #f44336; }
 
@@ -54,25 +54,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 /* Holdings Table */
 .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .table-header h3 { font-size: 15px; font-weight: 600; }
-.holdings-table { width: 100%; background: #fff; border-radius: 10px; overflow-x: auto; }
-.holdings-table table { width: 100%; border-collapse: collapse; }
-.holdings-table th { padding: 12px 10px; text-align: left; font-size: 12px; color: #999; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; }
+.holdings-table { width: 100%; background: #fff; border-radius: 10px; overflow: hidden; }
+.holdings-table table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.holdings-table th { padding: 10px 6px; text-align: left; font-size: 12px; color: #999; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; }
 .holdings-table th.draggable { cursor: grab; }
 .holdings-table th.draggable:active { cursor: grabbing; }
 .holdings-table th.drag-over { background: #e8f5e9; }
 .holdings-table th.dragging { opacity: 0.4; }
-.holdings-table td { padding: 10px 10px; overflow: hidden; text-overflow: ellipsis; }
-.holdings-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f8f8f8; }
+.holdings-table td { padding: 8px 6px; font-size: 13px; border-bottom: 1px solid #f8f8f8; overflow: hidden; text-overflow: ellipsis; }
 .holdings-table tr:last-child td { border-bottom: none; }
 .holdings-table tr:hover { background: #fafafa; }
-.ticker-cell .ticker { font-weight: 600; font-size: 14px; }
-.ticker-cell .name { font-size: 12px; color: #999; }
+.ticker-cell .ticker { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticker-cell .name { font-size: 11px; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #f0f0f0; color: #666; }
 .gain { color: #4caf50; }
 .loss { color: #f44336; }
-.editable-input { width: 60px; padding: 4px 6px; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center; font-size: 13px; outline: none; }
+.editable-input { width: 100%; max-width: 100%; padding: 3px 4px; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center; font-size: 12px; outline: none; box-sizing: border-box; }
 .editable-input:focus { border-color: #4caf50; }
-.sector-select { padding: 4px 6px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 13px; outline: none; background: #fff; }
+.sector-select { width: 100%; max-width: 100%; padding: 3px 4px; border: 1px solid #e0e0e0; border-radius: 4px; font-size: 12px; outline: none; background: #fff; box-sizing: border-box; }
 .sector-select:focus { border-color: #4caf50; }
 .adjust-buy { color: #4caf50; font-weight: 600; }
 .adjust-sell { color: #f44336; font-weight: 600; }
@@ -633,17 +632,17 @@ function renderSummary() {
 
 // ==================== Column System ====================
 const BASE_COLUMNS = [
-  { id: 'type', label: '类型', w: 70 },
-  { id: 'shares', label: '持仓数量', w: 90 },
-  { id: 'cost', label: '成本', w: 90 },
-  { id: 'price', label: '现价', w: 90 },
-  { id: 'mv', label: '市值', w: 110 },
-  { id: 'pl', label: '盈亏', w: 100 },
-  { id: 'plpct', label: '盈亏%', w: 85 },
-  { id: 'weight', label: '占比', w: 65 },
-  { id: 'target', label: '目标%', w: 75 },
-  { id: 'adjust', label: '调整(股)', w: 80 },
-  { id: 'sector', label: '板块', w: 85 },
+  { id: 'type', label: '类型', w: 58 },
+  { id: 'shares', label: '数量', w: 70 },
+  { id: 'cost', label: '成本', w: 72 },
+  { id: 'price', label: '现价', w: 72 },
+  { id: 'mv', label: '市值', w: 90 },
+  { id: 'pl', label: '盈亏', w: 85 },
+  { id: 'plpct', label: '盈亏%', w: 70 },
+  { id: 'weight', label: '占比', w: 55 },
+  { id: 'target', label: '目标%', w: 62 },
+  { id: 'adjust', label: '调整', w: 65 },
+  { id: 'sector', label: '板块', w: 80 },
 ];
 
 function getColumnOrder() {
@@ -703,8 +702,8 @@ function getCellHtml(colId, h, accId, idx, totalVal) {
   switch(colId) {
     case 'account': return `<td><span style="font-size:12px;color:#888;background:#f5f5f5;padding:2px 8px;border-radius:4px;">${escHtml(h._accountName)}</span></td>`;
     case 'type': return `<td><span class="type-badge">${h.type || 'STOCK'}</span></td>`;
-    case 'shares': return `<td><input class="editable-input" type="number" step="1" min="0" value="${h.shares}" onchange="updateFieldByRef('${accId}',${idx},'shares',this.value)" style="width:70px"></td>`;
-    case 'cost': return `<td><input class="editable-input" type="number" step="0.01" min="0" value="${h.costPerShare}" onchange="updateFieldByRef('${accId}',${idx},'costPerShare',this.value)" style="width:80px"></td>`;
+    case 'shares': return `<td><input class="editable-input" type="number" step="1" min="0" value="${h.shares}" onchange="updateFieldByRef('${accId}',${idx},'shares',this.value)"></td>`;
+    case 'cost': return `<td><input class="editable-input" type="number" step="0.01" min="0" value="${h.costPerShare}" onchange="updateFieldByRef('${accId}',${idx},'costPerShare',this.value)"></td>`;
     case 'price': return `<td>$${fmt(h.currentPrice || h.costPerShare)}</td>`;
     case 'mv': return `<td>$${fmt(mv)}</td>`;
     case 'pl': return `<td class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}$${fmt(Math.abs(pl))}</td>`;
@@ -739,8 +738,12 @@ function renderTable() {
   colOrder.forEach(id => activeCols.push(id));
   activeCols.push('_delete');
 
-  let headHtml = '<th>代码/名称</th>';
-  if (allView) headHtml += '<th>账户</th>';
+  const colPct = { type:5, shares:6, cost:7, price:7, mv:9, pl:8, plpct:6, weight:5, target:6, adjust:6, sector:8 };
+  const tickerPct = allView ? 9 : 11;
+  const accountPct = allView ? 6 : 0;
+  const deletePct = 3;
+  let headHtml = `<th style="width:${tickerPct}%">代码/名称</th>`;
+  if (allView) headHtml += `<th style="width:${accountPct}%">账户</th>`;
   // Calculate target sum for header
   const targetSum = getTargetSum();
 
@@ -754,9 +757,9 @@ function renderTable() {
       const color = targetSum > 100 ? '#f44336' : targetSum === 100 ? '#4caf50' : '#999';
       extra = `<div style="font-size:10px;color:${color};font-weight:600;">${targetSum}%</div>`;
     }
-    headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr}>${col.label}${arrow}${extra}</th>`;
+    headHtml += `<th class="draggable" draggable="true" data-col="${id}" ${sortAttr} style="width:${colPct[id]||7}%">${col.label}${arrow}${extra}</th>`;
   });
-  headHtml += '<th style="width:40px"></th>';
+  headHtml += `<th style="width:${deletePct}%"></th>`;
   headTr.innerHTML = headHtml;
 
   // Sort if active
@@ -817,7 +820,7 @@ function renderCashRow(allView, cash, totalAssets, colCount) {
   colOrder.forEach(id => {
     switch(id) {
       case 'type': html += '<td><span class="type-badge" style="background:#e8f5e9;color:#4caf50;">CASH</span></td>'; break;
-      case 'shares': html += `<td><input class="editable-input" type="number" step="0.01" min="0" value="${cash || ''}" onchange="updateCash(this.value)" style="width:80px" ${isAllView() ? 'disabled' : ''}></td>`; break;
+      case 'shares': html += `<td><input class="editable-input" type="number" step="0.01" min="0" value="${cash || ''}" onchange="updateCash(this.value)" ${isAllView() ? 'disabled' : ''}></td>`; break;
       case 'cost': html += '<td>-</td>'; break;
       case 'price': html += '<td>-</td>'; break;
       case 'mv': html += `<td>$${fmt(cash)}</td>`; break;
