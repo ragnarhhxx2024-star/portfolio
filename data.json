@@ -111,7 +111,7 @@
           "shares": 6,
           "costPerShare": 63.825,
           "currentPrice": 68.9,
-          "targetPct": 2,
+          "targetPct": 5,
           "sector": "消费"
         }
       ],
@@ -194,5 +194,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T05:09:37.323Z"
+  "lastUpdate": "2026-04-15T05:12:09.932Z"
 }
