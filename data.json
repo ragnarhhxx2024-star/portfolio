@@ -158,22 +158,12 @@
           "currentPrice": 56.41,
           "targetPct": null,
           "sector": "AI"
-        },
-        {
-          "ticker": "AMD",
-          "name": "AMD",
-          "type": "STOCK",
-          "shares": 2,
-          "costPerShare": 156.72,
-          "currentPrice": 258.12,
-          "targetPct": null,
-          "sector": "半导体"
         }
       ],
       "cash": 56.63
     }
   ],
-  "activeAccountId": "hk",
+  "activeAccountId": "ibkr",
   "history": {
     "hk": [
       {
@@ -206,5 +196,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T23:52:42.579Z"
+  "lastUpdate": "2026-04-15T23:54:30.726Z"
 }
