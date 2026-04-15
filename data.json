@@ -21,7 +21,7 @@
           "shares": 13,
           "costPerShare": 165.047,
           "currentPrice": 163,
-          "targetPct": null,
+          "targetPct": 10,
           "sector": "数据中心"
         },
         {
@@ -193,5 +193,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T01:23:57.136Z"
+  "lastUpdate": "2026-04-15T01:24:04.475Z"
 }
