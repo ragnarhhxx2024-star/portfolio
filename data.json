@@ -11,7 +11,7 @@
           "shares": 40,
           "costPerShare": 142.977,
           "currentPrice": 255.07,
-          "targetPct": null,
+          "targetPct": 30,
           "sector": "半导体"
         },
         {
@@ -172,7 +172,7 @@
       "cash": 56.63
     }
   ],
-  "activeAccountId": "hk",
+  "activeAccountId": "__all__",
   "history": {
     "hk": [
       {
@@ -193,5 +193,5 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-15T00:40:41.238Z"
+  "lastUpdate": "2026-04-15T01:23:57.136Z"
 }
