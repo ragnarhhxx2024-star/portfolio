@@ -6,6 +6,7 @@
 <title>投资组合追踪</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; overflow-x: hidden; }
@@ -189,7 +190,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       <div class="header-actions">
         <span class="update-time" id="updateTime"></span>
         <button class="btn" onclick="refreshPrices()">刷新价格</button>
-        <button class="btn" onclick="exportData()">导出</button>
+        <button class="btn" onclick="exportExcel()">导出Excel</button>
+        <button class="btn" onclick="exportData()">导出JSON</button>
         <button class="btn" onclick="document.getElementById('importFile').click()">导入</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
         <button class="btn btn-sm" onclick="showSettingsModal()" title="设置">设置</button>
@@ -1490,6 +1492,65 @@ function exportData() {
   a.href = URL.createObjectURL(blob);
   a.download = `portfolio_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
+}
+
+function exportExcel() {
+  const wb = XLSX.utils.book_new();
+
+  data.accounts.forEach(account => {
+    const rows = [];
+    const holdings = account.holdings || [];
+    const cash = account.cash || 0;
+    const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+    const totalAssets = totalVal + cash;
+
+    holdings.forEach(h => {
+      const mv = h.shares * (h.currentPrice || h.costPerShare);
+      const cost = h.shares * h.costPerShare;
+      const pl = mv - cost;
+      const plPct = cost > 0 ? (pl / cost * 100) : 0;
+      const weight = totalAssets > 0 ? (mv / totalAssets * 100) : 0;
+      rows.push({
+        '代码': h.ticker,
+        '名称': h.name,
+        '类型': h.type,
+        '数量': h.shares,
+        '成本': h.costPerShare,
+        '现价': h.currentPrice || h.costPerShare,
+        '市值': Math.round(mv * 100) / 100,
+        '盈亏': Math.round(pl * 100) / 100,
+        '盈亏%': Math.round(plPct * 100) / 100,
+        '占比%': Math.round(weight * 100) / 100,
+        '目标%': h.targetPct || '',
+        '板块': h.sector || ''
+      });
+    });
+
+    // Cash row
+    rows.push({
+      '代码': 'CASH',
+      '名称': '现金',
+      '类型': 'CASH',
+      '数量': cash,
+      '成本': '',
+      '现价': '',
+      '市值': cash,
+      '盈亏': '',
+      '盈亏%': '',
+      '占比%': totalAssets > 0 ? Math.round(cash / totalAssets * 10000) / 100 : 0,
+      '目标%': account.cashTargetPct || '',
+      '板块': ''
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    // Set column widths
+    ws['!cols'] = [
+      {wch:8},{wch:14},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:8},{wch:8},{wch:8},{wch:10}
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, account.name);
+  });
+
+  XLSX.writeFile(wb, `portfolio_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function importData(event) {
