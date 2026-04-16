@@ -181,8 +181,9 @@ def update_data():
 
     for account in data['accounts']:
         acc_id = account['id']
-        total = sum(h.get('shares', 0) * h.get('currentPrice', h.get('costPerShare', 0))
-                    for h in account['holdings'])
+        holdings_val = sum(h.get('shares', 0) * h.get('currentPrice', h.get('costPerShare', 0))
+                          for h in account['holdings'])
+        total = holdings_val + account.get('cash', 0)
 
         if acc_id not in data['history']:
             data['history'][acc_id] = []
