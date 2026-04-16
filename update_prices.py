@@ -195,9 +195,9 @@ def update_data():
         else:
             hist.append({'date': today, 'value': total})
 
-        # Keep max 365 days
-        if len(hist) > 365:
-            data['history'][acc_id] = hist[-365:]
+        # Keep max 5 years (~1825 days)
+        if len(hist) > 1825:
+            data['history'][acc_id] = hist[-1825:]
 
     data['lastUpdate'] = datetime.now(timezone.utc).isoformat()
 
