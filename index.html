@@ -1497,22 +1497,24 @@ function exportData() {
 function exportExcel() {
   const wb = XLSX.utils.book_new();
 
-  data.accounts.forEach(account => {
-    const rows = [];
-    const holdings = account.holdings || [];
-    const cash = account.cash || 0;
-    const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
-    const totalAssets = totalVal + cash;
+  const colWidths = [
+    {wch:8},{wch:14},{wch:8},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:8},{wch:8},{wch:8},{wch:10}
+  ];
 
+  function buildRows(holdings, cash, cashTargetPct, totalAssets, withAccount) {
+    const rows = [];
     holdings.forEach(h => {
       const mv = h.shares * (h.currentPrice || h.costPerShare);
       const cost = h.shares * h.costPerShare;
       const pl = mv - cost;
       const plPct = cost > 0 ? (pl / cost * 100) : 0;
       const weight = totalAssets > 0 ? (mv / totalAssets * 100) : 0;
-      rows.push({
+      const row = {
         '代码': h.ticker,
         '名称': h.name,
+      };
+      if (withAccount) row['账户'] = h._accountName || '';
+      Object.assign(row, {
         '类型': h.type,
         '数量': h.shares,
         '成本': h.costPerShare,
@@ -1524,29 +1526,43 @@ function exportExcel() {
         '目标%': h.targetPct || '',
         '板块': h.sector || ''
       });
+      rows.push(row);
     });
-
-    // Cash row
-    rows.push({
-      '代码': 'CASH',
-      '名称': '现金',
-      '类型': 'CASH',
-      '数量': cash,
-      '成本': '',
-      '现价': '',
-      '市值': cash,
-      '盈亏': '',
-      '盈亏%': '',
+    const cashRow = { '代码': 'CASH', '名称': '现金' };
+    if (withAccount) cashRow['账户'] = '';
+    Object.assign(cashRow, {
+      '类型': 'CASH', '数量': cash, '成本': '', '现价': '', '市值': cash,
+      '盈亏': '', '盈亏%': '',
       '占比%': totalAssets > 0 ? Math.round(cash / totalAssets * 10000) / 100 : 0,
-      '目标%': account.cashTargetPct || '',
-      '板块': ''
+      '目标%': cashTargetPct || '', '板块': ''
     });
+    rows.push(cashRow);
+    return rows;
+  }
 
+  // "全部账户" sheet
+  const allHoldings = [];
+  let allCash = 0;
+  data.accounts.forEach(a => {
+    (a.holdings || []).forEach(h => allHoldings.push({ ...h, _accountName: a.name }));
+    allCash += (a.cash || 0);
+  });
+  const allVal = allHoldings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+  const allTotal = allVal + allCash;
+  const allRows = buildRows(allHoldings, allCash, null, allTotal, true);
+  const allWs = XLSX.utils.json_to_sheet(allRows);
+  allWs['!cols'] = colWidths;
+  XLSX.utils.book_append_sheet(wb, allWs, '全部账户');
+
+  // Per-account sheets
+  data.accounts.forEach(account => {
+    const holdings = account.holdings || [];
+    const cash = account.cash || 0;
+    const totalVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
+    const totalAssets = totalVal + cash;
+    const rows = buildRows(holdings, cash, account.cashTargetPct, totalAssets, false);
     const ws = XLSX.utils.json_to_sheet(rows);
-    // Set column widths
-    ws['!cols'] = [
-      {wch:8},{wch:14},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:8},{wch:8},{wch:8},{wch:10}
-    ];
+    ws['!cols'] = colWidths.filter((_, i) => i !== 2); // skip 账户 column
     XLSX.utils.book_append_sheet(wb, ws, account.name);
   });
 
