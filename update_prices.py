@@ -8,9 +8,17 @@ import os
 from urllib.request import Request, urlopen, build_opener, HTTPCookieProcessor
 from http.cookiejar import CookieJar
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data.json')
+
+INDICES = [
+    ('^DJI', '道琼斯'),
+    ('^GSPC', '标普500'),
+    ('^RUT', '罗素2000'),
+    ('^NDX', '纳斯达克100'),
+]
 
 
 def get_yahoo_crumb():
@@ -50,6 +58,82 @@ def fetch_prices(symbols):
     return prices
 
 
+def fetch_index_changes(opener, crumb):
+    """Fetch 4 major indices with daily/1m/3m/YTD change percentages."""
+    symbols = [sym for sym, _ in INDICES]
+    name_map = {sym: name for sym, name in INDICES}
+
+    # Get current prices and daily change from v7 quote API
+    sym_str = ','.join(symbols)
+    url = f'https://query2.finance.yahoo.com/v7/finance/quote?symbols={quote(sym_str, safe=",")}&crumb={crumb}'
+    req = Request(url, headers={'User-Agent': UA})
+    resp = opener.open(req, timeout=15)
+    data = json.loads(resp.read())
+
+    results = {}
+    for q in data.get('quoteResponse', {}).get('result', []):
+        sym = q.get('symbol')
+        if sym not in name_map:
+            continue
+        results[sym] = {
+            'name': name_map[sym],
+            'price': q.get('regularMarketPrice', 0),
+            'daily': round(q.get('regularMarketChangePercent', 0), 2),
+        }
+
+    # Get historical prices for 1m/3m/YTD via v8 chart API
+    today = datetime.now(timezone.utc)
+    ytd_start = int(datetime(today.year, 1, 1, tzinfo=timezone.utc).timestamp())
+
+    for sym in symbols:
+        if sym not in results:
+            continue
+        try:
+            # Fetch 1 year of data to cover all periods
+            chart_url = (
+                f'https://query2.finance.yahoo.com/v8/finance/chart/{quote(sym, safe="")}?'
+                f'period1={ytd_start}&period2={int(today.timestamp())}'
+                f'&interval=1d&crumb={crumb}'
+            )
+            req = Request(chart_url, headers={'User-Agent': UA})
+            resp = opener.open(req, timeout=15)
+            chart = json.loads(resp.read())
+
+            closes = chart['chart']['result'][0]['indicators']['quote'][0]['close']
+            timestamps = chart['chart']['result'][0]['timestamp']
+            # Filter out None values and pair with timestamps
+            valid = [(t, c) for t, c in zip(timestamps, closes) if c is not None]
+
+            if not valid:
+                results[sym]['m1'] = None
+                results[sym]['m3'] = None
+                results[sym]['ytd'] = None
+                continue
+
+            current = results[sym]['price']
+            # YTD: first valid close of the year
+            ytd_base = valid[0][1]
+            results[sym]['ytd'] = round((current - ytd_base) / ytd_base * 100, 2)
+
+            # 1 month (~21 trading days) and 3 months (~63 trading days)
+            for key, days in [('m1', 21), ('m3', 63)]:
+                if len(valid) >= days:
+                    base = valid[-days][1]
+                    results[sym][key] = round((current - base) / base * 100, 2)
+                else:
+                    # Use earliest available
+                    base = valid[0][1]
+                    results[sym][key] = round((current - base) / base * 100, 2)
+
+        except Exception as e:
+            print(f'Warning: Failed to get history for {sym}: {e}')
+            results[sym].setdefault('m1', None)
+            results[sym].setdefault('m3', None)
+            results[sym].setdefault('ytd', None)
+
+    return results
+
+
 def update_data():
     """Main update routine."""
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
@@ -68,6 +152,15 @@ def update_data():
     print(f'Fetching prices for {len(tickers)} symbols: {", ".join(sorted(tickers))}')
     prices = fetch_prices(list(tickers))
     print(f'Got prices: {prices}')
+
+    # Fetch index data
+    try:
+        opener, crumb = get_yahoo_crumb()
+        indices = fetch_index_changes(opener, crumb)
+        data['indices'] = indices
+        print(f'Got indices: {list(indices.keys())}')
+    except Exception as e:
+        print(f'Warning: Failed to fetch indices: {e}')
 
     if not prices:
         print('ERROR: Failed to fetch any prices.')

@@ -40,7 +40,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 24px; }
 .card { background: #fff; border-radius: 10px; padding: 14px 16px; }
 .card .label { font-size: 12px; color: #999; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .card .label .icon { font-size: 16px; }
@@ -50,6 +50,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
 /* Account Name Display */
 .account-header { font-size: 13px; color: #666; margin-bottom: 16px; }
+
+/* Indices Bar */
+.indices-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+.index-card { flex: 1; background: #fff; border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.index-card .idx-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.index-card .idx-name { font-size: 13px; font-weight: 600; color: #333; white-space: nowrap; }
+.index-card .idx-price { font-size: 15px; font-weight: 700; }
+.index-card .idx-periods { display: flex; gap: 4px; flex-wrap: wrap; }
+.index-card .idx-tag { font-size: 11px; padding: 2px 5px; border-radius: 4px; white-space: nowrap; line-height: 1.4; }
+.idx-tag.up { background: #e8f5e9; color: #2e7d32; }
+.idx-tag.down { background: #ffebee; color: #c62828; }
+.idx-tag.flat { background: #f5f5f5; color: #666; }
 
 /* Holdings Table */
 .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -133,6 +145,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   .header-actions .update-time { width: 100%; margin: 0; }
   .btn { padding: 5px 10px; font-size: 12px; }
 
+  /* Indices bar → 2x2 grid */
+  .indices-bar { flex-wrap: wrap; gap: 6px; }
+  .index-card { flex: 1 1 calc(50% - 3px); min-width: calc(50% - 3px); padding: 8px 10px; gap: 8px; }
+  .index-card .idx-price { font-size: 13px; }
+  .index-card .idx-tag { font-size: 10px; padding: 1px 4px; }
+
   /* Summary cards → 2 columns */
   .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .card .value { font-size: 17px; }
@@ -178,6 +196,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       </div>
     </div>
 
+    <!-- Market Indices -->
+    <div class="indices-bar" id="indicesBar"></div>
+
     <div class="account-header" id="accountHeader"></div>
 
     <!-- Summary -->
@@ -201,6 +222,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       <div class="card">
         <div class="label"><span class="icon">%</span> 盈亏比例</div>
         <div class="value" id="totalPLPct">0.00%</div>
+      </div>
+      <div class="card">
+        <div class="label"><span class="icon">%</span> 当日盈亏</div>
+        <div class="value" id="dailyPL">--</div>
       </div>
       <div class="card" id="cashCard">
         <div class="label"><span class="icon">$</span> 现金</div>
@@ -522,6 +547,11 @@ async function initData() {
     data = local;
   }
 
+  // Always use indices from remote data.json (updated by GitHub Actions)
+  if (remote && remote.indices) {
+    data.indices = remote.indices;
+  }
+
   saveLocalCache(data);
 
   if (!data.activeAccountId && data.accounts.length > 0) {
@@ -664,7 +694,40 @@ function recordHistoryForAccount(account) {
 }
 
 // ==================== Rendering ====================
+function renderIndices() {
+  const bar = document.getElementById('indicesBar');
+  const indices = data.indices;
+  if (!indices || Object.keys(indices).length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = '';
+  const order = ['^GSPC', '^NDX', '^RUT', '^DJI'];
+  const syms = order.filter(s => indices[s]);
+
+  bar.innerHTML = syms.map(sym => {
+    const d = indices[sym];
+    const fmtPct = (label, v) => {
+      if (v == null) return `<span class="idx-tag flat">${label} --</span>`;
+      const cls = v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
+      const sign = v > 0 ? '+' : '';
+      return `<span class="idx-tag ${cls}">${label} ${sign}${v.toFixed(2)}%</span>`;
+    };
+    const priceColor = d.daily > 0 ? '#2e7d32' : d.daily < 0 ? '#c62828' : '#333';
+    return `<div class="index-card">
+      <div class="idx-top">
+        <div class="idx-name">${d.name}</div>
+        <div class="idx-price" style="color:${priceColor}">${d.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+      </div>
+      <div class="idx-periods">
+        ${fmtPct('日', d.daily)}${fmtPct('月', d.m1)}${fmtPct('季', d.m3)}${fmtPct('年', d.ytd)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderAll() {
+  renderIndices();
   renderSidebar();
   renderSummary();
   renderTable();
@@ -742,6 +805,39 @@ function renderSummary() {
   const cashPct = totalAssets > 0 ? (cash / totalAssets * 100).toFixed(1) : '0.0';
   document.getElementById('cashPct').textContent = cash > 0 ? `${cashPct}%` : '';
   document.getElementById('cashInput').disabled = isAllView();
+
+  // Daily P&L: compare current value to most recent history entry
+  const dailyEl = document.getElementById('dailyPL');
+  let prevValue = null;
+  if (isAllView()) {
+    // Sum previous day values across all accounts
+    let sum = 0, found = false;
+    data.accounts.forEach(a => {
+      const hist = (data.history || {})[a.id] || [];
+      if (hist.length >= 2) { sum += hist[hist.length - 2].value; found = true; }
+      else if (hist.length === 1) { sum += hist[0].value; found = true; }
+    });
+    // Add cash to previous value for fair comparison
+    if (found) {
+      let prevCash = 0;
+      data.accounts.forEach(a => { prevCash += (a.cash || 0); });
+      prevValue = sum + prevCash;
+    }
+  } else {
+    const acc = getActiveAccount();
+    const hist = (data.history || {})[acc?.id] || [];
+    if (hist.length >= 2) {
+      prevValue = hist[hist.length - 2].value + (acc.cash || 0);
+    }
+  }
+  if (prevValue && prevValue > 0) {
+    const dailyPct = (totalAssets - prevValue) / prevValue * 100;
+    dailyEl.textContent = `${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%`;
+    dailyEl.className = `value ${dailyPct >= 0 ? 'gain' : 'loss'}`;
+  } else {
+    dailyEl.textContent = '--';
+    dailyEl.className = 'value';
+  }
 }
 
 // ==================== Column System ====================
