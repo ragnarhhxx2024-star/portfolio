@@ -812,29 +812,33 @@ function renderSummary() {
   document.getElementById('cashPct').textContent = cash > 0 ? `${cashPct}%` : '';
   document.getElementById('cashInput').disabled = isAllView();
 
-  // Daily P&L: compare current value to most recent history entry
+  // Daily P&L: compare current value to most recent history entry (before today)
   const dailyEl = document.getElementById('dailyPL');
+  const todayStr = new Date().toISOString().slice(0, 10);
+  // History entries from 2026-04-16 onward include cash; earlier entries are holdings-only
+  const pickPrev = (hist) => {
+    for (let i = hist.length - 1; i >= 0; i--) {
+      if (hist[i].date !== todayStr) return hist[i];
+    }
+    return null;
+  };
+  const adjustForCash = (entry, cash) => {
+    return entry.date >= '2026-04-16' ? entry.value : entry.value + cash;
+  };
   let prevValue = null;
   if (isAllView()) {
-    // Sum previous day values across all accounts
     let sum = 0, found = false;
     data.accounts.forEach(a => {
       const hist = (data.history || {})[a.id] || [];
-      if (hist.length >= 2) { sum += hist[hist.length - 2].value; found = true; }
-      else if (hist.length === 1) { sum += hist[0].value; found = true; }
+      const prev = pickPrev(hist);
+      if (prev) { sum += adjustForCash(prev, a.cash || 0); found = true; }
     });
-    // Add cash to previous value for fair comparison
-    if (found) {
-      let prevCash = 0;
-      data.accounts.forEach(a => { prevCash += (a.cash || 0); });
-      prevValue = sum + prevCash;
-    }
+    if (found) prevValue = sum;
   } else {
     const acc = getActiveAccount();
     const hist = (data.history || {})[acc?.id] || [];
-    if (hist.length >= 2) {
-      prevValue = hist[hist.length - 2].value + (acc.cash || 0);
-    }
+    const prev = pickPrev(hist);
+    if (prev) prevValue = adjustForCash(prev, acc.cash || 0);
   }
   if (prevValue && prevValue > 0) {
     const dailyPct = (totalAssets - prevValue) / prevValue * 100;
