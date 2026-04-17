@@ -60,7 +60,7 @@
           "ticker": "CRCL",
           "name": "Circle",
           "type": "STOCK",
-          "shares": 15,
+          "shares": 14,
           "costPerShare": 70.557,
           "currentPrice": 107.46,
           "targetPct": 5,
@@ -247,7 +247,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T19:20:53.129Z",
+  "lastUpdate": "2026-04-17T19:21:17.863Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
