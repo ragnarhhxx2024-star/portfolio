@@ -868,7 +868,7 @@ function saveColumnOrder(order) { localStorage.setItem('portfolio_col_order', JS
 
 let colOrder = getColumnOrder();
 const SORTABLE_COLS = ['pl', 'plpct', 'dailypl', 'weight'];
-let sortCol = null, sortDir = 0; // 0=none, 1=asc, -1=desc
+let sortCol = 'weight', sortDir = -1; // 0=none, 1=asc, -1=desc; default: 占比 降序
 
 function toggleSort(colId) {
   if (sortCol === colId) {
