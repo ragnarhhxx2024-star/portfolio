@@ -109,19 +109,6 @@
           "shortFloatSource": "finviz"
         },
         {
-          "ticker": "META",
-          "name": "Meta",
-          "type": "STOCK",
-          "shares": 1,
-          "costPerShare": 523.31,
-          "currentPrice": 676.87,
-          "targetPct": 0,
-          "sector": "社交媒体",
-          "dailyPct": 0.7877,
-          "shortFloat": 1.21,
-          "shortFloatSource": "finviz"
-        },
-        {
           "ticker": "CEG",
           "name": "Constellation Energy",
           "type": "STOCK",
@@ -260,7 +247,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T10:06:55.330Z",
+  "lastUpdate": "2026-04-17T19:20:40.816Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
