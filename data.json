@@ -60,7 +60,7 @@
           "ticker": "CRCL",
           "name": "Circle",
           "type": "STOCK",
-          "shares": 14,
+          "shares": 15,
           "costPerShare": 70.557,
           "currentPrice": 107.46,
           "targetPct": 5,
@@ -73,7 +73,7 @@
           "ticker": "PLTR",
           "name": "Palantir Tech",
           "type": "STOCK",
-          "shares": 10,
+          "shares": 12,
           "costPerShare": 145.083,
           "currentPrice": 142.76,
           "targetPct": 5,
@@ -86,7 +86,7 @@
           "ticker": "DUOL",
           "name": "多邻国",
           "type": "STOCK",
-          "shares": 13,
+          "shares": 16,
           "costPerShare": 185.982,
           "currentPrice": 103.45,
           "targetPct": 5,
@@ -247,7 +247,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T19:20:40.816Z",
+  "lastUpdate": "2026-04-17T19:20:53.129Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
