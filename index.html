@@ -68,7 +68,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .table-header h3 { font-size: 15px; font-weight: 600; }
 .holdings-table { width: 100%; background: #fff; border-radius: 10px; overflow-x: auto; overflow-y: visible; }
-.holdings-table table { width: 100%; min-width: 1200px; border-collapse: collapse; table-layout: fixed; }
+.holdings-table table { width: 100%; min-width: 1200px; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.holdings-table th:first-child,
+.holdings-table td:first-child { position: -webkit-sticky; position: sticky; left: 0; background: #fff; z-index: 2; box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+.holdings-table thead th:first-child { background: #fff; z-index: 3; }
+.holdings-table tr:hover td:first-child { background: #fafafa; }
 .holdings-table th { padding: 10px 6px; text-align: left; font-size: 12px; color: #999; font-weight: 500; border-bottom: 1px solid #f0f0f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; user-select: none; }
 .holdings-table th.draggable { cursor: grab; }
 .holdings-table th.draggable:active { cursor: grabbing; }
