@@ -812,34 +812,21 @@ function renderSummary() {
   document.getElementById('cashPct').textContent = cash > 0 ? `${cashPct}%` : '';
   document.getElementById('cashInput').disabled = isAllView();
 
-  // Daily P&L: compare current value to most recent history entry (before today)
+  // Daily P&L: sum each holding's market-day change, immune to position/cash edits.
+  // yesterdayValue_i = shares_i * price_i / (1 + dailyPct_i/100)
+  // Cash has no daily change, so yesterday cash = current cash.
   const dailyEl = document.getElementById('dailyPL');
-  const todayStr = new Date().toISOString().slice(0, 10);
-  // History entries from 2026-04-16 onward include cash; earlier entries are holdings-only
-  const pickPrev = (hist) => {
-    for (let i = hist.length - 1; i >= 0; i--) {
-      if (hist[i].date !== todayStr) return hist[i];
-    }
-    return null;
-  };
-  const adjustForCash = (entry, cash) => {
-    return entry.date >= '2026-04-16' ? entry.value : entry.value + cash;
-  };
-  let prevValue = null;
-  if (isAllView()) {
-    let sum = 0, found = false;
-    data.accounts.forEach(a => {
-      const hist = (data.history || {})[a.id] || [];
-      const prev = pickPrev(hist);
-      if (prev) { sum += adjustForCash(prev, a.cash || 0); found = true; }
-    });
-    if (found) prevValue = sum;
-  } else {
-    const acc = getActiveAccount();
-    const hist = (data.history || {})[acc?.id] || [];
-    const prev = pickPrev(hist);
-    if (prev) prevValue = adjustForCash(prev, acc.cash || 0);
-  }
+  let hasDailyData = false;
+  let yesterdayTotal = cash;
+  holdings.forEach(h => {
+    const price = Number(h.currentPrice) || 0;
+    const shares = Number(h.shares) || 0;
+    const pct = Number(h.dailyPct);
+    if (Number.isFinite(pct) && pct !== 0) hasDailyData = true;
+    const denom = 1 + (Number.isFinite(pct) ? pct : 0) / 100;
+    yesterdayTotal += (shares * price) / (denom || 1);
+  });
+  const prevValue = hasDailyData && yesterdayTotal > 0 ? yesterdayTotal : null;
   if (prevValue && prevValue > 0) {
     const dailyPct = (totalAssets - prevValue) / prevValue * 100;
     dailyEl.textContent = `${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%`;

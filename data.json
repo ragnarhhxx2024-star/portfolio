@@ -12,7 +12,8 @@
           "costPerShare": 142.977,
           "currentPrice": 278.26,
           "targetPct": 30,
-          "sector": "半导体"
+          "sector": "半导体",
+          "dailyPct": 7.8026
         },
         {
           "ticker": "ORCL",
@@ -22,7 +23,8 @@
           "costPerShare": 165.047,
           "currentPrice": 178.34,
           "targetPct": 10,
-          "sector": "数据中心"
+          "sector": "数据中心",
+          "dailyPct": 5.0233
         },
         {
           "ticker": "HIMS",
@@ -32,7 +34,8 @@
           "costPerShare": 36.16,
           "currentPrice": 26.99,
           "targetPct": 5,
-          "sector": "医疗"
+          "sector": "医疗",
+          "dailyPct": 11.1157
         },
         {
           "ticker": "COIN",
@@ -42,7 +45,8 @@
           "costPerShare": 264.234,
           "currentPrice": 199.825,
           "targetPct": 5,
-          "sector": "加密货币"
+          "sector": "加密货币",
+          "dailyPct": 2.0036
         },
         {
           "ticker": "CRCL",
@@ -52,7 +56,8 @@
           "costPerShare": 70.557,
           "currentPrice": 107.46,
           "targetPct": 5,
-          "sector": "加密货币"
+          "sector": "加密货币",
+          "dailyPct": 1.8385
         },
         {
           "ticker": "PLTR",
@@ -62,7 +67,8 @@
           "costPerShare": 145.083,
           "currentPrice": 142.76,
           "targetPct": 5,
-          "sector": "AI"
+          "sector": "AI",
+          "dailyPct": 0.4291
         },
         {
           "ticker": "DUOL",
@@ -72,7 +78,8 @@
           "costPerShare": 185.982,
           "currentPrice": 103.45,
           "targetPct": 5,
-          "sector": "软件"
+          "sector": "软件",
+          "dailyPct": 4.7277
         },
         {
           "ticker": "LMND",
@@ -82,7 +89,8 @@
           "costPerShare": 50.43,
           "currentPrice": 68.48,
           "targetPct": 5,
-          "sector": "金融科技"
+          "sector": "金融科技",
+          "dailyPct": 3.9781
         },
         {
           "ticker": "META",
@@ -92,7 +100,8 @@
           "costPerShare": 523.31,
           "currentPrice": 676.87,
           "targetPct": 0,
-          "sector": "社交媒体"
+          "sector": "社交媒体",
+          "dailyPct": 0.7877
         },
         {
           "ticker": "CEG",
@@ -102,7 +111,8 @@
           "costPerShare": 265.995,
           "currentPrice": 299.14,
           "targetPct": 5,
-          "sector": "能源"
+          "sector": "能源",
+          "dailyPct": 1.4963
         },
         {
           "ticker": "ELF",
@@ -112,7 +122,8 @@
           "costPerShare": 63.825,
           "currentPrice": 69.25,
           "targetPct": 5,
-          "sector": "消费"
+          "sector": "消费",
+          "dailyPct": -0.8732
         }
       ],
       "cash": 5448,
@@ -130,7 +141,8 @@
           "costPerShare": 61.625,
           "currentPrice": 42.73,
           "targetPct": null,
-          "sector": "加密货币"
+          "sector": "加密货币",
+          "dailyPct": 0.3994
         }
       ],
       "cash": 8.97
@@ -147,7 +159,8 @@
           "costPerShare": 63.84,
           "currentPrice": 60.44,
           "targetPct": null,
-          "sector": "软件"
+          "sector": "软件",
+          "dailyPct": 1.0871
         },
         {
           "ticker": "TEM",
@@ -157,7 +170,8 @@
           "costPerShare": 50.41,
           "currentPrice": 54.42,
           "targetPct": null,
-          "sector": "AI"
+          "sector": "AI",
+          "dailyPct": -3.5278
         }
       ],
       "cash": 561
@@ -177,6 +191,10 @@
       {
         "date": "2026-04-16",
         "value": 29484.129999999997
+      },
+      {
+        "date": "2026-04-17",
+        "value": 29484.129999999997
       }
     ],
     "sg": [
@@ -190,6 +208,10 @@
       },
       {
         "date": "2026-04-16",
+        "value": 692.65
+      },
+      {
+        "date": "2026-04-17",
         "value": 692.65
       }
     ],
@@ -205,10 +227,14 @@
       {
         "date": "2026-04-16",
         "value": 1709.6
+      },
+      {
+        "date": "2026-04-17",
+        "value": 1709.6
       }
     ]
   },
-  "lastUpdate": "2026-04-16T21:36:36.655047+00:00",
+  "lastUpdate": "2026-04-17T00:52:13.566818+00:00",
   "indices": {
     "^DJI": {
       "name": "道琼斯",

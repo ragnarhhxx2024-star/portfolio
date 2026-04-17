@@ -39,7 +39,7 @@ def get_yahoo_crumb():
 
 
 def fetch_prices(symbols):
-    """Fetch current prices for a list of symbols using Yahoo Finance v7 API."""
+    """Fetch current prices + daily change % for a list of symbols using Yahoo Finance v7 API."""
     if not symbols:
         return {}
 
@@ -54,7 +54,10 @@ def fetch_prices(symbols):
     for q in data.get('quoteResponse', {}).get('result', []):
         price = q.get('regularMarketPrice')
         if price is not None:
-            prices[q['symbol']] = price
+            prices[q['symbol']] = {
+                'price': price,
+                'dailyPct': round(q.get('regularMarketChangePercent', 0) or 0, 4),
+            }
     return prices
 
 
@@ -171,7 +174,8 @@ def update_data():
     for account in data['accounts']:
         for h in account['holdings']:
             if h['ticker'] in prices:
-                h['currentPrice'] = prices[h['ticker']]
+                h['currentPrice'] = prices[h['ticker']]['price']
+                h['dailyPct'] = prices[h['ticker']]['dailyPct']
                 updated += 1
 
     # Record history for each account
