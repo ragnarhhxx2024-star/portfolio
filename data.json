@@ -86,7 +86,7 @@
           "ticker": "DUOL",
           "name": "多邻国",
           "type": "STOCK",
-          "shares": 16,
+          "shares": 19,
           "costPerShare": 185.982,
           "currentPrice": 103.45,
           "targetPct": 5,
@@ -247,7 +247,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T19:21:17.863Z",
+  "lastUpdate": "2026-04-17T19:21:29.142Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
