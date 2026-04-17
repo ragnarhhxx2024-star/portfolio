@@ -846,6 +846,7 @@ const BASE_COLUMNS = [
   { id: 'mv', label: '市值', w: 90 },
   { id: 'pl', label: '盈亏', w: 85 },
   { id: 'plpct', label: '盈亏%', w: 70 },
+  { id: 'dailypl', label: '当日盈亏', w: 85 },
   { id: 'weight', label: '占比', w: 55 },
   { id: 'target', label: '目标%', w: 62 },
   { id: 'adjust', label: '调整', w: 65 },
@@ -866,7 +867,7 @@ function getColumnOrder() {
 function saveColumnOrder(order) { localStorage.setItem('portfolio_col_order', JSON.stringify(order)); }
 
 let colOrder = getColumnOrder();
-const SORTABLE_COLS = ['pl', 'plpct', 'weight'];
+const SORTABLE_COLS = ['pl', 'plpct', 'dailypl', 'weight'];
 let sortCol = null, sortDir = 0; // 0=none, 1=asc, -1=desc
 
 function toggleSort(colId) {
@@ -885,9 +886,13 @@ function getSortValue(h, colId, totalVal) {
   const pl = mv - h.shares * h.costPerShare;
   const plPct = h.costPerShare > 0 ? ((h.currentPrice || h.costPerShare) / h.costPerShare - 1) * 100 : 0;
   const weight = totalVal > 0 ? (mv / totalVal * 100) : 0;
+  const dailyPct = h.dailyPct || 0;
+  const prevPrice = (h.currentPrice || h.costPerShare) / (1 + dailyPct / 100);
+  const dailyPl = h.shares * ((h.currentPrice || h.costPerShare) - prevPrice);
   switch(colId) {
     case 'pl': return pl;
     case 'plpct': return plPct;
+    case 'dailypl': return dailyPl;
     case 'weight': return weight;
     default: return 0;
   }
@@ -915,6 +920,15 @@ function getCellHtml(colId, h, accId, idx, totalVal) {
     case 'mv': return `<td>$${fmt(mv)}</td>`;
     case 'pl': return `<td class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}$${fmt(Math.abs(pl))}</td>`;
     case 'plpct': return `<td class="${plPct >= 0 ? 'gain' : 'loss'}">${plPct >= 0 ? '+' : ''}${plPct.toFixed(2)}%</td>`;
+    case 'dailypl': {
+      const dailyPct = h.dailyPct;
+      if (dailyPct == null) return `<td>—</td>`;
+      const prevPrice = (h.currentPrice || h.costPerShare) / (1 + dailyPct / 100);
+      const dailyPl = h.shares * ((h.currentPrice || h.costPerShare) - prevPrice);
+      const cls = dailyPl >= 0 ? 'gain' : 'loss';
+      const sign = dailyPl >= 0 ? '+' : '-';
+      return `<td class="${cls}">${sign}$${fmt(Math.abs(dailyPl))}<div style="font-size:10px;font-weight:500;">${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%</div></td>`;
+    }
     case 'weight': return `<td>${weight.toFixed(1)}%</td>`;
     case 'target': return `<td><input class="editable-input" type="number" step="0.1" min="0" max="100" value="${h.targetPct ?? ''}" placeholder="—" onchange="updateTargetByRef('${accId}',${idx},this.value)"></td>`;
     case 'adjust': return `<td class="${adjustClass}">${adjustText}</td>`;
@@ -945,7 +959,7 @@ function renderTable() {
   colOrder.forEach(id => activeCols.push(id));
   activeCols.push('_delete');
 
-  const colPct = { type:5, shares:6, cost:7, price:7, mv:9, pl:8, plpct:6, weight:5, target:6, adjust:6, sector:8 };
+  const colPct = { type:5, shares:6, cost:7, price:7, mv:9, pl:8, plpct:6, dailypl:8, weight:5, target:6, adjust:6, sector:8 };
   const tickerPct = allView ? 9 : 11;
   const accountPct = allView ? 6 : 0;
   const deletePct = 3;
@@ -1489,7 +1503,7 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
 
   const colWidths = [
-    {wch:8},{wch:14},{wch:8},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:8},{wch:8},{wch:8},{wch:10}
+    {wch:8},{wch:14},{wch:8},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8},{wch:10}
   ];
 
   function buildRows(holdings, cash, cashTargetPct, totalAssets, withAccount) {
@@ -1500,6 +1514,12 @@ function exportExcel() {
       const pl = mv - cost;
       const plPct = cost > 0 ? (pl / cost * 100) : 0;
       const weight = totalAssets > 0 ? (mv / totalAssets * 100) : 0;
+      const dailyPct = h.dailyPct;
+      let dailyPl = '';
+      if (dailyPct != null) {
+        const prevPrice = (h.currentPrice || h.costPerShare) / (1 + dailyPct / 100);
+        dailyPl = Math.round(h.shares * ((h.currentPrice || h.costPerShare) - prevPrice) * 100) / 100;
+      }
       const row = {
         '代码': h.ticker,
         '名称': h.name,
@@ -1513,6 +1533,8 @@ function exportExcel() {
         '市值': Math.round(mv * 100) / 100,
         '盈亏': Math.round(pl * 100) / 100,
         '盈亏%': Math.round(plPct * 100) / 100,
+        '当日盈亏': dailyPl,
+        '当日盈亏%': dailyPct != null ? Math.round(dailyPct * 100) / 100 : '',
         '占比%': Math.round(weight * 100) / 100,
         '目标%': h.targetPct || '',
         '板块': h.sector || ''
@@ -1523,7 +1545,7 @@ function exportExcel() {
     if (withAccount) cashRow['账户'] = '';
     Object.assign(cashRow, {
       '类型': 'CASH', '数量': cash, '成本': '', '现价': '', '市值': cash,
-      '盈亏': '', '盈亏%': '',
+      '盈亏': '', '盈亏%': '', '当日盈亏': '', '当日盈亏%': '',
       '占比%': totalAssets > 0 ? Math.round(cash / totalAssets * 10000) / 100 : 0,
       '目标%': cashTargetPct || '', '板块': ''
     });
