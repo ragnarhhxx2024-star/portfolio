@@ -135,7 +135,7 @@
           "shortFloatSource": "finviz"
         }
       ],
-      "cash": 5448,
+      "cash": 5530,
       "cashTargetPct": 20
     },
     {
@@ -247,7 +247,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T19:21:52.193Z",
+  "lastUpdate": "2026-04-17T19:23:02.016Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
