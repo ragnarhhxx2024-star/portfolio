@@ -13,7 +13,9 @@
           "currentPrice": 278.26,
           "targetPct": 30,
           "sector": "半导体",
-          "dailyPct": 7.8026
+          "dailyPct": 7.8026,
+          "shortFloat": 2.25,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "ORCL",
@@ -24,7 +26,9 @@
           "currentPrice": 178.34,
           "targetPct": 10,
           "sector": "数据中心",
-          "dailyPct": 5.0233
+          "dailyPct": 5.0233,
+          "shortFloat": 1.62,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "HIMS",
@@ -35,7 +39,9 @@
           "currentPrice": 26.99,
           "targetPct": 5,
           "sector": "医疗",
-          "dailyPct": 11.1157
+          "dailyPct": 11.1157,
+          "shortFloat": 38.71,
+          "shortFloatSource": "yahoo"
         },
         {
           "ticker": "COIN",
@@ -46,7 +52,9 @@
           "currentPrice": 199.825,
           "targetPct": 5,
           "sector": "加密货币",
-          "dailyPct": 2.0036
+          "dailyPct": 2.0036,
+          "shortFloat": 11.18,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "CRCL",
@@ -57,7 +65,9 @@
           "currentPrice": 107.46,
           "targetPct": 5,
           "sector": "加密货币",
-          "dailyPct": 1.8385
+          "dailyPct": 1.8385,
+          "shortFloat": 12.74,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "PLTR",
@@ -68,7 +78,9 @@
           "currentPrice": 142.76,
           "targetPct": 5,
           "sector": "AI",
-          "dailyPct": 0.4291
+          "dailyPct": 0.4291,
+          "shortFloat": 2.31,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "DUOL",
@@ -79,7 +91,9 @@
           "currentPrice": 103.45,
           "targetPct": 5,
           "sector": "软件",
-          "dailyPct": 4.7277
+          "dailyPct": 4.7277,
+          "shortFloat": 21.94,
+          "shortFloatSource": "yahoo"
         },
         {
           "ticker": "LMND",
@@ -90,7 +104,9 @@
           "currentPrice": 68.48,
           "targetPct": 5,
           "sector": "金融科技",
-          "dailyPct": 3.9781
+          "dailyPct": 3.9781,
+          "shortFloat": 16.02,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "META",
@@ -101,7 +117,9 @@
           "currentPrice": 676.87,
           "targetPct": 0,
           "sector": "社交媒体",
-          "dailyPct": 0.7877
+          "dailyPct": 0.7877,
+          "shortFloat": 1.21,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "CEG",
@@ -112,7 +130,9 @@
           "currentPrice": 299.14,
           "targetPct": 5,
           "sector": "能源",
-          "dailyPct": 1.4963
+          "dailyPct": 1.4963,
+          "shortFloat": 2.84,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "ELF",
@@ -123,7 +143,9 @@
           "currentPrice": 69.25,
           "targetPct": 5,
           "sector": "消费",
-          "dailyPct": -0.8732
+          "dailyPct": -0.8732,
+          "shortFloat": 13.98,
+          "shortFloatSource": "finviz"
         }
       ],
       "cash": 5448,
@@ -160,7 +182,9 @@
           "currentPrice": 60.44,
           "targetPct": null,
           "sector": "软件",
-          "dailyPct": 1.0871
+          "dailyPct": 1.0871,
+          "shortFloat": 3.02,
+          "shortFloatSource": "finviz"
         },
         {
           "ticker": "TEM",
@@ -171,7 +195,9 @@
           "currentPrice": 54.42,
           "targetPct": null,
           "sector": "AI",
-          "dailyPct": -3.5278
+          "dailyPct": -3.5278,
+          "shortFloat": 27.95,
+          "shortFloatSource": "yahoo"
         }
       ],
       "cash": 561
@@ -234,7 +260,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T06:10:56.007Z",
+  "lastUpdate": "2026-04-17T09:20:24.766310+00:00",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
@@ -262,7 +288,7 @@
     },
     "^NDX": {
       "name": "纳斯达克100",
-      "price": 26333,
+      "price": 26333.0,
       "daily": 0.49,
       "ytd": 4.47,
       "m1": 7.81,
