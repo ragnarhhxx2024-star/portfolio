@@ -2,7 +2,7 @@
   "accounts": [
     {
       "id": "hk",
-      "name": "长桥香港",
+      "name": "长桥HK",
       "holdings": [
         {
           "ticker": "AMD",
@@ -153,7 +153,7 @@
     },
     {
       "id": "sg",
-      "name": "长桥新加坡",
+      "name": "长桥SG",
       "holdings": [
         {
           "ticker": "IBIT",
@@ -171,7 +171,7 @@
     },
     {
       "id": "ibkr",
-      "name": "盈透",
+      "name": "IBKR",
       "holdings": [
         {
           "ticker": "RBLX",
@@ -203,7 +203,7 @@
       "cash": 561
     }
   ],
-  "activeAccountId": "hk",
+  "activeAccountId": "ibkr",
   "history": {
     "hk": [
       {
@@ -260,7 +260,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T09:51:14.659200+00:00",
+  "lastUpdate": "2026-04-17T10:06:55.330Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
@@ -288,7 +288,7 @@
     },
     "^NDX": {
       "name": "纳斯达克100",
-      "price": 26333.0,
+      "price": 26333,
       "daily": 0.49,
       "ytd": 4.47,
       "m1": 7.81,
