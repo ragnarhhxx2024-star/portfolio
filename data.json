@@ -9,7 +9,7 @@
           "name": "AMD",
           "type": "STOCK",
           "shares": 37,
-          "costPerShare": 142.977,
+          "costPerShare": 133.8,
           "currentPrice": 278.26,
           "targetPct": 30,
           "sector": "半导体",
@@ -177,7 +177,7 @@
       "cash": 561
     }
   ],
-  "activeAccountId": "ibkr",
+  "activeAccountId": "hk",
   "history": {
     "hk": [
       {
@@ -234,7 +234,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-17T00:53:37.676914+00:00",
+  "lastUpdate": "2026-04-17T06:10:56.007Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
@@ -262,7 +262,7 @@
     },
     "^NDX": {
       "name": "纳斯达克100",
-      "price": 26333.0,
+      "price": 26333,
       "daily": 0.49,
       "ytd": 4.47,
       "m1": 7.81,
