@@ -5,7 +5,10 @@ Used by GitHub Actions cron job.
 """
 import json
 import os
+import re
+import time
 from urllib.request import Request, urlopen, build_opener, HTTPCookieProcessor
+from urllib.error import URLError, HTTPError
 from http.cookiejar import CookieJar
 from datetime import datetime, timezone
 from urllib.parse import quote
@@ -137,6 +140,97 @@ def fetch_index_changes(opener, crumb):
     return results
 
 
+def _http_get(url, headers=None, timeout=15, opener=None):
+    """Simple HTTP GET helper that returns decoded text, or raises."""
+    h = {'User-Agent': UA, 'Accept': 'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8',
+         'Accept-Language': 'en-US,en;q=0.9'}
+    if headers:
+        h.update(headers)
+    req = Request(url, headers=h)
+    if opener is None:
+        resp = urlopen(req, timeout=timeout)
+    else:
+        resp = opener.open(req, timeout=timeout)
+    return resp.read().decode('utf-8', errors='replace')
+
+
+def fetch_short_float_finviz(ticker):
+    """Primary: Finviz quote page 'Short Float' field. Returns percent as float or None."""
+    try:
+        html = _http_get(f'https://finviz.com/quote.ashx?t={quote(ticker)}&p=d')
+        # Structure: Short Float</a></div></td><td ...><div ...><a ...><b>2.25%</b>...
+        # Must extract from inside <b> tag — simple % regex matches CSS class values like w-[8%]
+        m = re.search(r'Short Float[\s\S]{0,800}?<b[^>]*>\s*([\d.]+)\s*%', html)
+        if m:
+            return round(float(m.group(1)), 2)
+    except Exception as e:
+        print(f'  finviz {ticker}: {e}')
+    return None
+
+
+def fetch_short_float_yahoo(ticker, opener, crumb):
+    """Fallback 1: Yahoo quoteSummary defaultKeyStatistics.shortPercentOfFloat."""
+    try:
+        url = (f'https://query2.finance.yahoo.com/v10/finance/quoteSummary/{quote(ticker)}'
+               f'?modules=defaultKeyStatistics&crumb={crumb}')
+        raw = _http_get(url, opener=opener)
+        j = json.loads(raw)
+        stats = j.get('quoteSummary', {}).get('result', [{}])[0].get('defaultKeyStatistics', {})
+        spf = stats.get('shortPercentOfFloat', {})
+        # Yahoo returns decimal (e.g. 0.0523 = 5.23%)
+        raw_val = spf.get('raw')
+        if raw_val is not None:
+            return round(raw_val * 100, 2)
+    except Exception as e:
+        print(f'  yahoo {ticker}: {e}')
+    return None
+
+
+def fetch_short_float_stockanalysis(ticker):
+    """Fallback 2: stockanalysis.com statistics page (Next.js inline JSON).
+    Data is embedded as: shortFloat",title:"Short % of Float",value:"12.34%"
+    """
+    try:
+        html = _http_get(f'https://stockanalysis.com/stocks/{quote(ticker.lower())}/statistics/')
+        m = re.search(r'shortFloat"[\s\S]{0,120}?value:"([\d.]+)\s*%"', html)
+        if m:
+            return round(float(m.group(1)), 2)
+        # Also try the overview page as a backup inside this source
+        html = _http_get(f'https://stockanalysis.com/stocks/{quote(ticker.lower())}/')
+        m = re.search(r'shortFloat"[\s\S]{0,120}?value:"([\d.]+)\s*%"', html)
+        if m:
+            return round(float(m.group(1)), 2)
+    except Exception as e:
+        print(f'  stockanalysis {ticker}: {e}')
+    return None
+
+
+def fetch_short_floats(tickers, opener, crumb):
+    """Fetch short float % for a list of tickers using fallback chain.
+    Returns dict {ticker: {value: float, source: str}}.
+    """
+    results = {}
+    for i, t in enumerate(tickers):
+        # Try sources in order
+        val = fetch_short_float_finviz(t)
+        source = 'finviz'
+        if val is None:
+            val = fetch_short_float_yahoo(t, opener, crumb)
+            source = 'yahoo'
+        if val is None:
+            val = fetch_short_float_stockanalysis(t)
+            source = 'stockanalysis'
+        if val is not None:
+            results[t] = {'value': val, 'source': source}
+            print(f'  [{source}] {t}: {val}%')
+        else:
+            print(f'  [none] {t}: no data')
+        # Be polite - small delay between requests to avoid rate limiting
+        if i < len(tickers) - 1:
+            time.sleep(0.8)
+    return results
+
+
 def update_data():
     """Main update routine."""
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
@@ -157,6 +251,7 @@ def update_data():
     print(f'Got prices: {prices}')
 
     # Fetch index data
+    opener, crumb = None, None
     try:
         opener, crumb = get_yahoo_crumb()
         indices = fetch_index_changes(opener, crumb)
@@ -169,6 +264,22 @@ def update_data():
         print('ERROR: Failed to fetch any prices.')
         return False
 
+    # Fetch short float % for each ticker (skip ETFs/indices — they usually lack the metric)
+    # Collect tickers with STOCK type only
+    stock_tickers = sorted({h['ticker'] for account in data['accounts']
+                            for h in account.get('holdings', [])
+                            if (h.get('type') or 'STOCK').upper() == 'STOCK'})
+    short_floats = {}
+    if stock_tickers:
+        print(f'Fetching short float for {len(stock_tickers)} stocks...')
+        try:
+            # Ensure we have a Yahoo opener/crumb for fallback
+            if opener is None or crumb is None:
+                opener, crumb = get_yahoo_crumb()
+            short_floats = fetch_short_floats(stock_tickers, opener, crumb)
+        except Exception as e:
+            print(f'Warning: short float fetch failed: {e}')
+
     # Update holdings
     updated = 0
     for account in data['accounts']:
@@ -177,6 +288,9 @@ def update_data():
                 h['currentPrice'] = prices[h['ticker']]['price']
                 h['dailyPct'] = prices[h['ticker']]['dailyPct']
                 updated += 1
+            if h['ticker'] in short_floats:
+                h['shortFloat'] = short_floats[h['ticker']]['value']
+                h['shortFloatSource'] = short_floats[h['ticker']]['source']
 
     # Record history for each account
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')

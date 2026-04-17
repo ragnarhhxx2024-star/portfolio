@@ -850,6 +850,7 @@ const BASE_COLUMNS = [
   { id: 'weight', label: '占比', w: 55 },
   { id: 'target', label: '目标%', w: 62 },
   { id: 'adjust', label: '调整', w: 65 },
+  { id: 'shortfloat', label: '空头占比', w: 72 },
   { id: 'sector', label: '板块', w: 80 },
 ];
 
@@ -867,7 +868,7 @@ function getColumnOrder() {
 function saveColumnOrder(order) { localStorage.setItem('portfolio_col_order', JSON.stringify(order)); }
 
 let colOrder = getColumnOrder();
-const SORTABLE_COLS = ['pl', 'plpct', 'dailypl', 'weight'];
+const SORTABLE_COLS = ['pl', 'plpct', 'dailypl', 'weight', 'shortfloat'];
 let sortCol = 'weight', sortDir = -1; // 0=none, 1=asc, -1=desc; default: 占比 降序
 
 function toggleSort(colId) {
@@ -894,6 +895,7 @@ function getSortValue(h, colId, totalVal) {
     case 'plpct': return plPct;
     case 'dailypl': return dailyPl;
     case 'weight': return weight;
+    case 'shortfloat': return h.shortFloat == null ? -1 : Number(h.shortFloat);
     default: return 0;
   }
 }
@@ -932,6 +934,15 @@ function getCellHtml(colId, h, accId, idx, totalVal) {
     case 'weight': return `<td>${weight.toFixed(1)}%</td>`;
     case 'target': return `<td><input class="editable-input" type="number" step="0.1" min="0" max="100" value="${h.targetPct ?? ''}" placeholder="—" onchange="updateTargetByRef('${accId}',${idx},this.value)"></td>`;
     case 'adjust': return `<td class="${adjustClass}">${adjustText}</td>`;
+    case 'shortfloat': {
+      const sf = h.shortFloat;
+      if (sf == null) return `<td style="color:#999;">—</td>`;
+      let color = '#666';
+      if (sf >= 20) color = '#f44336';
+      else if (sf >= 10) color = '#ff9800';
+      const src = h.shortFloatSource ? ` title="来源: ${h.shortFloatSource}"` : '';
+      return `<td style="color:${color};font-weight:600;"${src}>${sf.toFixed(2)}%</td>`;
+    }
     case 'sector': {
       const isCustom = h.sector && !SECTORS.includes(h.sector);
       const opts = SECTORS.map(s => `<option value="${s}" ${h.sector === s ? 'selected' : ''}>${s}</option>`).join('');
@@ -959,7 +970,7 @@ function renderTable() {
   colOrder.forEach(id => activeCols.push(id));
   activeCols.push('_delete');
 
-  const colPct = { type:5, shares:6, cost:7, price:7, mv:9, pl:8, plpct:6, dailypl:8, weight:5, target:6, adjust:6, sector:8 };
+  const colPct = { type:5, shares:6, cost:6, price:7, mv:8, pl:7, plpct:6, dailypl:8, weight:5, target:6, adjust:5, shortfloat:6, sector:7 };
   const tickerPct = allView ? 9 : 11;
   const accountPct = allView ? 6 : 0;
   const deletePct = 3;
@@ -1503,7 +1514,7 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
 
   const colWidths = [
-    {wch:8},{wch:14},{wch:8},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:8},{wch:10}
+    {wch:8},{wch:14},{wch:8},{wch:6},{wch:8},{wch:10},{wch:10},{wch:12},{wch:12},{wch:12},{wch:10},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10}
   ];
 
   function buildRows(holdings, cash, cashTargetPct, totalAssets, withAccount) {
@@ -1537,6 +1548,7 @@ function exportExcel() {
         '当日盈亏%': dailyPct != null ? Math.round(dailyPct * 100) / 100 : '',
         '占比%': Math.round(weight * 100) / 100,
         '目标%': h.targetPct || '',
+        '空头占比%': h.shortFloat != null ? h.shortFloat : '',
         '板块': h.sector || ''
       });
       rows.push(row);
@@ -1547,7 +1559,7 @@ function exportExcel() {
       '类型': 'CASH', '数量': cash, '成本': '', '现价': '', '市值': cash,
       '盈亏': '', '盈亏%': '', '当日盈亏': '', '当日盈亏%': '',
       '占比%': totalAssets > 0 ? Math.round(cash / totalAssets * 10000) / 100 : 0,
-      '目标%': cashTargetPct || '', '板块': ''
+      '目标%': cashTargetPct || '', '空头占比%': '', '板块': ''
     });
     rows.push(cashRow);
     return rows;
