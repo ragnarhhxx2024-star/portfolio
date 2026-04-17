@@ -770,7 +770,7 @@ function renderSidebar() {
     const pl = tv - tc;
     const plPct = tc > 0 ? (pl / tc * 100) : 0;
     const cashLine = cash > 0 ? `<div class="info" style="color:#999;">现金: $${fmt(cash)}</div>` : '';
-    html += `<div class="account-item ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')">
+    html += `<div class="account-item ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" ondblclick="renameAccount(event, '${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')" title="双击重命名 · 右键删除">
       <div class="name">${escHtml(a.name)}</div>
       <div class="info">$${fmt(tv + cash)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
       ${cashLine}
@@ -1503,6 +1503,25 @@ function accountContextMenu(e, id) {
     saveData(data);
     renderAll();
   }
+}
+
+function renameAccount(e, id) {
+  if (e) e.stopPropagation();
+  const acc = data.accounts.find(a => a.id === id);
+  if (!acc) return;
+  const newName = prompt(`重命名组合「${acc.name}」：`, acc.name);
+  if (newName == null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) { showToast('名称不能为空', 'error'); return; }
+  if (trimmed === acc.name) return;
+  if (data.accounts.some(a => a.id !== id && a.name === trimmed)) {
+    showToast('已存在同名组合', 'error');
+    return;
+  }
+  acc.name = trimmed;
+  saveData(data);
+  renderAll();
+  showToast(`已重命名为「${trimmed}」`, 'success');
 }
 
 // ==================== Import/Export ====================
