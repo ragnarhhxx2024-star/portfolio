@@ -47,7 +47,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
 /* Horizontal Account Tabs (top of main content) */
 .account-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.account-tab { padding: 10px 16px; background: #F2EBD7; border-radius: 6px; cursor: pointer; border: 1px solid #D4C9B3; transition: all .2s; min-width: 140px; }
+.account-tab { flex: 1 1 0; padding: 10px 16px; background: #F2EBD7; border-radius: 6px; cursor: pointer; border: 1px solid #D4C9B3; transition: all .2s; min-width: 0; }
 .account-tab:hover { background: #DDD4BF; }
 .account-tab.active { border-color: #2A2F25; background: #2A2F25; color: #F2EBD7; }
 .account-tab.active .info { color: #D4C9B3; }
@@ -58,7 +58,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .account-tab .info .loss { color: #7A1F1F; font-weight: 700; }
 .account-tab.active .info .gain { color: #9DC4A3; }
 .account-tab.active .info .loss { color: #D59E9E; }
-.account-tab.add-tab { min-width: auto; padding: 10px 14px; border: 2px dashed #B8AB8E; color: #6D6557; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 300; }
+.account-tab.add-tab { flex: 0 0 auto; min-width: 48px; padding: 10px 14px; border: 2px dashed #B8AB8E; color: #6D6557; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 300; }
 .account-tab.add-tab:hover { border-color: #2B5A3C; color: #2B5A3C; background: #F2EBD7; }
 
 /* Main */
@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; max-width: 75%; }
 .sub-value { font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 13px; font-weight: 600; margin-top: 2px; color: #6D6557; }
 .sub-value.inline { margin-top: 0; margin-left: 4px; font-size: 11px; letter-spacing: 0; text-transform: none; }
 .sub-value.gain { color: #1F4A2F; }
