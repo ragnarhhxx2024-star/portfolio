@@ -1388,8 +1388,9 @@ function renderLineChart() {
     }
   });
 
+  const portfolioLabel = chartMode === 'market' ? '持仓市值' : '总资产';
   const datasets = [{
-    label: '我的组合',
+    label: portfolioLabel,
     data: filtered.map(h => h.value),
     borderColor: '#4caf50',
     backgroundColor: 'rgba(76,175,80,0.08)',
@@ -1424,6 +1425,7 @@ function renderLineChart() {
     },
     options: {
       responsive: true,
+      layout: { padding: { right: 56, top: 12 } },
       plugins: {
         legend: {
           display: spxAligned.length > 0,
