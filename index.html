@@ -198,7 +198,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   <!-- Main Content -->
   <div class="main">
     <div class="header">
-      <h1>投资组合追踪</h1>
+      <h1 id="pageTitle">投资组合追踪</h1>
       <div class="header-actions">
         <span class="update-time" id="updateTime"></span>
         <button class="btn" onclick="refreshPrices()">刷新价格</button>
@@ -802,10 +802,12 @@ function renderSummary() {
   let cash = 0;
   if (isAllView()) {
     data.accounts.forEach(a => { cash += (a.cash || 0); });
+    document.getElementById('pageTitle').textContent = '全部账户';
     document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
   } else {
     const account = getActiveAccount();
     cash = account?.cash || 0;
+    document.getElementById('pageTitle').textContent = account.name;
     document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
   }
 
