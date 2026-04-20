@@ -1193,12 +1193,34 @@ function renderPieChart() {
   const ctx = document.getElementById('pieChart').getContext('2d');
   if (pieChart) pieChart.destroy();
 
+  const centerLabel = pieMode === 'sector' ? '持仓+现金' : '总资产';
+  const centerTextPlugin = {
+    id: 'centerText',
+    afterDraw: (chart) => {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const cx = (chartArea.left + chartArea.right) / 2;
+      const cy = (chartArea.top + chartArea.bottom) / 2;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#999';
+      ctx.font = '12px system-ui, -apple-system, sans-serif';
+      ctx.fillText(centerLabel, cx, cy - 14);
+      ctx.fillStyle = '#333';
+      ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`$${fmt(totalVal)}`, cx, cy + 8);
+      ctx.restore();
+    }
+  };
+
   pieChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels,
       datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
     },
+    plugins: [centerTextPlugin],
     options: {
       responsive: true,
       plugins: {
@@ -1319,6 +1341,15 @@ function renderLineChart() {
   const ctx = document.getElementById('lineChart').getContext('2d');
   if (lineChart) lineChart.destroy();
 
+  const lastIdx = filtered.length - 1;
+  const endLabel = (color) => ({
+    display: (c) => c.dataIndex === lastIdx,
+    color,
+    font: { size: 11, weight: 'bold' },
+    anchor: 'end', align: 'top', offset: 4,
+    formatter: (v) => v == null ? '' : `$${(v/1000).toFixed(1)}K`
+  });
+
   const datasets = [{
     label: '我的组合',
     data: filtered.map(h => h.value),
@@ -1328,7 +1359,8 @@ function renderLineChart() {
     tension: 0.3,
     pointRadius: filtered.length > 30 ? 0 : 3,
     borderWidth: 2,
-    order: 1
+    order: 1,
+    datalabels: endLabel('#2e7d32')
   }];
   if (spxAligned.length > 0) {
     datasets.push({
@@ -1341,7 +1373,8 @@ function renderLineChart() {
       tension: 0.3,
       pointRadius: 0,
       borderWidth: 1.5,
-      order: 2
+      order: 2,
+      datalabels: endLabel('#9e9e9e')
     });
   }
 
@@ -1354,7 +1387,6 @@ function renderLineChart() {
     options: {
       responsive: true,
       plugins: {
-        datalabels: { display: false },
         legend: {
           display: spxAligned.length > 0,
           position: 'bottom',
