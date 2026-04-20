@@ -58,6 +58,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .account-tab .info .loss { color: #7A1F1F; font-weight: 700; }
 .account-tab.active .info .gain { color: #9DC4A3; }
 .account-tab.active .info .loss { color: #D59E9E; }
+.account-tab .name .pct { font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 11px; font-weight: 600; margin-left: 4px; letter-spacing: 0; }
+.account-tab .name .pct.gain { color: #1F4A2F; }
+.account-tab .name .pct.loss { color: #7A1F1F; }
+.account-tab.active .name .pct.gain { color: #9DC4A3; }
+.account-tab.active .name .pct.loss { color: #D59E9E; }
 .account-tab.add-tab { min-width: 48px; padding: 16px 14px; border: 2px dashed #B8AB8E; color: #6D6557; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 300; }
 .account-tab.add-tab:hover { border-color: #2B5A3C; color: #2B5A3C; background: #F2EBD7; }
 
@@ -814,9 +819,14 @@ function renderAccountTabs() {
     plAll += (tv - tc);
   });
 
+  const plAllPct = (() => {
+    let tcAll = 0;
+    data.accounts.forEach(a => { tcAll += a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0); });
+    return tcAll > 0 ? (plAll / tcAll * 100) : 0;
+  })();
   let html = `<div class="account-tab hero ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()">
-    <div class="name">全部账户</div>
-    <div class="info">$${fmt(totalAll)} <span class="${plAll >= 0 ? 'gain' : 'loss'}">${plAll >= 0 ? '+' : ''}$${fmt(Math.abs(plAll))}</span></div>
+    <div class="name">全部账户 <span class="pct ${plAll >= 0 ? 'gain' : 'loss'}">${plAll >= 0 ? '+' : ''}${plAllPct.toFixed(1)}%</span></div>
+    <div class="info">$${fmt(totalAll)}</div>
   </div>`;
 
   data.accounts.forEach(a => {
@@ -826,8 +836,8 @@ function renderAccountTabs() {
     const pl = tv - tc;
     const plPct = tc > 0 ? (pl / tc * 100) : 0;
     html += `<div class="account-tab ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" ondblclick="renameAccount(event, '${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')" title="双击重命名 · 右键删除">
-      <div class="name">${escHtml(a.name)}</div>
-      <div class="info">$${fmt(tv + cash)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
+      <div class="name">${escHtml(a.name)} <span class="pct ${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
+      <div class="info">$${fmt(tv + cash)}</div>
     </div>`;
   });
   html += `<div class="account-tab add-tab" onclick="showAddAccountModal()" title="添加组合">+</div>`;
