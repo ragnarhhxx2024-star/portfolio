@@ -1327,10 +1327,19 @@ function renderLineChart() {
     return;
   }
 
+  // Portfolio return over selected range (always computed)
+  let portfolioRet = null;
+  if (filtered.length >= 2 && filtered[0].value > 0) {
+    portfolioRet = (filtered[filtered.length-1].value / filtered[0].value - 1) * 100;
+  }
+
   // Build SPX overlay: align to portfolio dates, normalize so SPX[0] == portfolio[0]
-  const spxRaw = (data.spxHistory || []).filter(s => s.date >= filtered[0].date && s.date <= filtered[filtered.length-1].date);
+  // Only compare against SPX when chart shows market value (excl. cash) — 总资产含现金不适合对比指数
+  const spxRaw = chartMode === 'market'
+    ? (data.spxHistory || []).filter(s => s.date >= filtered[0].date && s.date <= filtered[filtered.length-1].date)
+    : [];
   let spxAligned = [];
-  let portfolioRet = null, spxRet = null;
+  let spxRet = null;
   if (spxRaw.length >= 2) {
     // For each portfolio date, find latest SPX close on or before that date
     let j = 0;
@@ -1346,7 +1355,6 @@ function renderLineChart() {
       const spxBase = spxByDate[firstIdx];
       const portBase = filtered[firstIdx].value;
       spxAligned = spxByDate.map(v => v == null ? null : v / spxBase * portBase);
-      portfolioRet = (filtered[filtered.length-1].value / portBase - 1) * 100;
       spxRet = (spxByDate[spxByDate.length-1] / spxBase - 1) * 100;
     }
   }
