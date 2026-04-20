@@ -18,8 +18,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .container { display: flex; min-height: 100vh; max-width: 100vw; overflow: hidden; }
 
 /* Sidebar */
-.sidebar { width: 200px; background: #F2EBD7; border-right: 1px solid #CEC2A7; padding: 20px 8px; flex-shrink: 0; }
-.sidebar h3 { padding: 0 16px 12px; font-size: 13px; color: #6D6557; }
+.sidebar { width: 180px; background: #F2EBD7; border-right: 1px solid #CEC2A7; padding: 20px 12px; flex-shrink: 0; }
+.sidebar h3 { padding: 0 8px 12px; font-size: 11px; color: #6D6557; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.nav-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; color: #2A2F25; transition: all .2s; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+.nav-item:hover { background: #DDD4BF; }
+.nav-item.active { background: #2A2F25; color: #F2EBD7; font-weight: 600; }
+.nav-item.disabled { color: #B8AB8E; cursor: default; }
+.nav-item.disabled:hover { background: transparent; }
+.nav-item .tag { font-size: 10px; color: #B8AB8E; text-transform: uppercase; letter-spacing: 0.5px; }
 .account-item { padding: 10px 16px; cursor: pointer; border-left: 4px solid transparent; transition: all .2s; border-radius: 0 6px 6px 0; margin: 2px 8px 2px 0; }
 .account-item:hover { background: #DDD4BF; }
 .account-item.active { border-left-color: #2B5A3C; background: linear-gradient(90deg, #E2E8D5 0%, #ECE8D5 100%); }
@@ -233,7 +239,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 <div class="container">
   <!-- Sidebar (reserved for future panels) -->
   <div class="sidebar">
-    <h3>账户</h3>
+    <h3>导航</h3>
+    <div class="nav-item active">账户</div>
+    <div class="nav-item disabled">分析 <span class="tag">soon</span></div>
+    <div class="nav-item disabled">新闻 <span class="tag">soon</span></div>
+    <div class="nav-item disabled">笔记 <span class="tag">soon</span></div>
+    <div class="nav-item disabled">待办 <span class="tag">soon</span></div>
   </div>
 
   <!-- Main Content -->
