@@ -231,9 +231,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 </div>
 
 <div class="container">
-  <!-- Sidebar -->
+  <!-- Sidebar (reserved for future panels) -->
   <div class="sidebar">
-    <div id="accountList"></div>
+    <h3>账户</h3>
   </div>
 
   <!-- Main Content -->
@@ -790,7 +790,11 @@ function renderAll() {
 }
 
 function renderSidebar() {
-  const list = document.getElementById('accountList');
+  renderAccountTabs();
+}
+
+function renderAccountTabs() {
+  const tabs = document.getElementById('accountTabs');
   let totalAll = 0, plAll = 0;
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
@@ -799,17 +803,11 @@ function renderSidebar() {
     plAll += (tv - tc);
   });
 
-  list.innerHTML = `<div class="account-item hero ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()">
+  let html = `<div class="account-tab hero ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()">
     <div class="name">全部账户</div>
     <div class="info">$${fmt(totalAll)} <span class="${plAll >= 0 ? 'gain' : 'loss'}">${plAll >= 0 ? '+' : ''}$${fmt(Math.abs(plAll))}</span></div>
   </div>`;
 
-  renderAccountTabs();
-}
-
-function renderAccountTabs() {
-  const tabs = document.getElementById('accountTabs');
-  let html = '';
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
