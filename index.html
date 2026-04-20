@@ -1142,7 +1142,7 @@ function initTableInteractions() {
 
 // ==================== Charts ====================
 Chart.register(ChartDataLabels);
-let pieChart = null, lineChart = null;
+let pieChart = null, lineChart = null, piePulseTimer = null;
 let pieMode = 'holding';
 
 function setPieMode(mode) {
@@ -1229,13 +1229,43 @@ function renderPieChart() {
     }
   };
 
+  // High-concentration highlight: slices >= 30% pulse with red glowing border
+  const CONCENTRATION_THRESHOLD = 30;
+  const highIndices = values
+    .map((v, i) => ({ i, pct: totalVal > 0 ? v / totalVal * 100 : 0, label: labels[i] }))
+    .filter(x => x.pct >= CONCENTRATION_THRESHOLD && !/^现金/.test(x.label))
+    .map(x => x.i);
+
+  const pulsePlugin = {
+    id: 'concentrationPulse',
+    afterDatasetsDraw: (chart) => {
+      if (highIndices.length === 0) return;
+      const meta = chart.getDatasetMeta(0);
+      const alpha = 0.25 + 0.55 * Math.abs(Math.sin(Date.now() / 380));
+      const c = chart.ctx;
+      highIndices.forEach(i => {
+        const arc = meta.data[i];
+        if (!arc) return;
+        c.save();
+        c.beginPath();
+        c.arc(arc.x, arc.y, arc.outerRadius + 4, arc.startAngle, arc.endAngle);
+        c.lineWidth = 6;
+        c.strokeStyle = `rgba(244, 67, 54, ${alpha})`;
+        c.stroke();
+        c.restore();
+      });
+    }
+  };
+
+  if (piePulseTimer) { clearInterval(piePulseTimer); piePulseTimer = null; }
+
   pieChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
       labels,
       datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
     },
-    plugins: [centerTextPlugin],
+    plugins: [centerTextPlugin, pulsePlugin],
     options: {
       responsive: true,
       plugins: {
@@ -1265,6 +1295,10 @@ function renderPieChart() {
       cutout: '55%'
     }
   });
+
+  if (highIndices.length > 0) {
+    piePulseTimer = setInterval(() => { if (pieChart) pieChart.draw(); }, 60);
+  }
 }
 
 let chartMode = 'total'; // 'total' = 总资产含现金, 'market' = 持仓市值
