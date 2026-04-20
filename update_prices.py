@@ -231,6 +231,31 @@ def fetch_short_floats(tickers, opener, crumb):
     return results
 
 
+def fetch_spx_history(opener, crumb, years=5):
+    """Fetch ^GSPC daily closes for the given number of years.
+    Returns list of {date: 'YYYY-MM-DD', value: float}, sorted ascending.
+    """
+    today = datetime.now(timezone.utc)
+    period1 = int((today.timestamp()) - years * 366 * 86400)
+    period2 = int(today.timestamp())
+    url = (f'https://query2.finance.yahoo.com/v8/finance/chart/%5EGSPC?'
+           f'period1={period1}&period2={period2}&interval=1d&crumb={crumb}')
+    req = Request(url, headers={'User-Agent': UA})
+    resp = opener.open(req, timeout=20)
+    chart = json.loads(resp.read())
+    result = chart['chart']['result'][0]
+    timestamps = result['timestamp']
+    closes = result['indicators']['quote'][0]['close']
+    out = []
+    for t, c in zip(timestamps, closes):
+        if c is None:
+            continue
+        d = datetime.fromtimestamp(t, tz=timezone.utc).strftime('%Y-%m-%d')
+        out.append({'date': d, 'value': round(c, 2)})
+    out.sort(key=lambda x: x['date'])
+    return out
+
+
 def update_data():
     """Main update routine."""
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
@@ -259,6 +284,17 @@ def update_data():
         print(f'Got indices: {list(indices.keys())}')
     except Exception as e:
         print(f'Warning: Failed to fetch indices: {e}')
+
+    # Fetch S&P 500 5y history for benchmark overlay on the trend chart
+    try:
+        if opener is None or crumb is None:
+            opener, crumb = get_yahoo_crumb()
+        spx_hist = fetch_spx_history(opener, crumb, years=5)
+        if spx_hist:
+            data['spxHistory'] = spx_hist
+            print(f'Got SPX history: {len(spx_hist)} daily points')
+    except Exception as e:
+        print(f'Warning: Failed to fetch SPX history: {e}')
 
     if not prices:
         print('ERROR: Failed to fetch any prices.')
