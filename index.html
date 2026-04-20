@@ -1190,6 +1190,18 @@ function renderPieChart() {
   if (pieChart) pieChart.destroy();
 
   const centerLabel = pieMode === 'sector' ? '持仓+现金' : '总资产';
+
+  // Compute YTD return: (current total - earliest YTD total) / earliest YTD total
+  const yearStr = String(new Date().getFullYear());
+  let ytdPct = null;
+  const accHist = isAllView()
+    ? (() => { const m = {}; data.accounts.forEach(a => (data.history[a.id] || []).forEach(h => { m[h.date] = (m[h.date] || 0) + (h.value || 0); })); return Object.entries(m).map(([date, value]) => ({ date, value })).sort((a,b) => a.date.localeCompare(b.date)); })()
+    : (data.history[getActiveAccount()?.id] || []).slice().sort((a,b) => a.date.localeCompare(b.date));
+  const ytdEntries = accHist.filter(h => h.date.startsWith(yearStr));
+  if (ytdEntries.length >= 2 && ytdEntries[0].value > 0) {
+    ytdPct = (ytdEntries[ytdEntries.length - 1].value - ytdEntries[0].value) / ytdEntries[0].value * 100;
+  }
+
   const centerTextPlugin = {
     id: 'centerText',
     afterDraw: (chart) => {
@@ -1200,12 +1212,21 @@ function renderPieChart() {
       ctx.save();
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      const hasYtd = ytdPct != null;
+      const topY = hasYtd ? cy - 22 : cy - 14;
+      const valY = hasYtd ? cy : cy + 8;
       ctx.fillStyle = '#999';
       ctx.font = '12px system-ui, -apple-system, sans-serif';
-      ctx.fillText(centerLabel, cx, cy - 14);
+      ctx.fillText(centerLabel, cx, topY);
       ctx.fillStyle = '#333';
       ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`$${fmt(totalVal)}`, cx, cy + 8);
+      ctx.fillText(`$${fmt(totalVal)}`, cx, valY);
+      if (hasYtd) {
+        const sign = ytdPct >= 0 ? '+' : '';
+        ctx.fillStyle = ytdPct >= 0 ? '#4caf50' : '#f44336';
+        ctx.font = '12px system-ui, -apple-system, sans-serif';
+        ctx.fillText(`年初至今 ${sign}${ytdPct.toFixed(2)}%`, cx, cy + 22);
+      }
       ctx.restore();
     }
   };
