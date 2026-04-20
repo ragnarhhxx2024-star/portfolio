@@ -32,8 +32,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
 /* Main */
 .main { flex: 1; padding: 24px 20px; overflow: hidden; min-width: 0; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.header h1 { font-size: 15px; font-weight: 600; color: #666; }
+.header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; }
 .header-actions { display: flex; gap: 8px; align-items: center; }
 .header-actions .update-time { font-size: 12px; color: #999; margin-right: 8px; }
 .btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; color: #555; display: inline-flex; align-items: center; gap: 4px; transition: all .2s; }
@@ -154,7 +153,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
   /* Header wrap */
   .header { flex-wrap: wrap; gap: 8px; }
-  .header h1 { font-size: 17px; width: 100%; }
   .header-actions { flex-wrap: wrap; gap: 6px; }
   .header-actions .update-time { width: 100%; margin: 0; }
   .btn { padding: 5px 10px; font-size: 12px; }
@@ -198,7 +196,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   <!-- Main Content -->
   <div class="main">
     <div class="header">
-      <h1 id="pageTitle">投资组合追踪</h1>
       <div class="header-actions">
         <span class="update-time" id="updateTime"></span>
         <button class="btn" onclick="refreshPrices()">刷新价格</button>
@@ -802,12 +799,10 @@ function renderSummary() {
   let cash = 0;
   if (isAllView()) {
     data.accounts.forEach(a => { cash += (a.cash || 0); });
-    document.getElementById('pageTitle').textContent = '全部账户';
     document.getElementById('accountHeader').textContent = `全部账户 · ${holdings.length} 个持仓`;
   } else {
     const account = getActiveAccount();
     cash = account?.cash || 0;
-    document.getElementById('pageTitle').textContent = account.name;
     document.getElementById('accountHeader').textContent = `${account.name} · ${holdings.length} 个持仓`;
   }
 
