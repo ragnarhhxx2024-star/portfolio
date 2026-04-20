@@ -30,6 +30,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .add-account-btn { margin: 12px 16px; padding: 8px; border: 1px dashed #ccc; border-radius: 6px; text-align: center; cursor: pointer; color: #999; font-size: 13px; }
 .add-account-btn:hover { border-color: #4caf50; color: #4caf50; }
 
+/* Horizontal Account Tabs (top of main content) */
+.account-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.account-tab { padding: 10px 16px; background: #fff; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all .2s; min-width: 140px; }
+.account-tab:hover { background: #f5f7f5; }
+.account-tab.active { border-color: #34c759; background: linear-gradient(135deg, #e6f9ed 0%, #f0faf3 100%); }
+.account-tab .name { font-weight: 600; font-size: 14px; color: #333; }
+.account-tab.active .name { color: #1b8a3a; }
+.account-tab .info { font-size: 12px; color: #888; margin-top: 4px; }
+.account-tab .info .gain { color: #34c759; font-weight: 600; }
+.account-tab .info .loss { color: #f44336; font-weight: 600; }
+.account-tab.add-tab { min-width: auto; padding: 10px 14px; border: 2px dashed #ccc; color: #999; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 300; }
+.account-tab.add-tab:hover { border-color: #4caf50; color: #4caf50; background: #fff; }
+
 /* Main */
 .main { flex: 1; padding: 24px 20px; overflow: hidden; min-width: 0; }
 .header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; }
@@ -139,14 +152,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 @media (max-width: 768px) {
   .container { flex-direction: column; max-width: 100vw; }
 
-  /* Sidebar → top horizontal bar */
-  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; padding: 12px 8px 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-  .sidebar h3 { padding: 0 8px 0 0; margin: 0; font-size: 12px; white-space: nowrap; }
-  #accountList { display: flex; gap: 4px; overflow-x: auto; flex: 1; }
-  .account-item { padding: 6px 10px; margin: 0; border-left: none; border-radius: 6px; border: 1px solid #eee; white-space: nowrap; flex-shrink: 0; }
-  .account-item.active { border-color: #34c759; background: #e6f9ed; }
-  .account-item .info { display: none; }
-  .add-account-btn { margin: 0; padding: 6px 10px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+  /* Sidebar → top compact "all accounts" summary */
+  .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; padding: 12px 12px 8px; }
+  .account-item.hero { padding: 8px 12px; margin-bottom: 0; }
+  .account-item.hero .name { font-size: 16px; }
+  .account-item.hero .info { font-size: 13px; margin-top: 2px; }
+
+  /* Account tabs → compact row */
+  .account-tab { padding: 6px 12px; min-width: auto; }
+  .account-tab .info { font-size: 11px; }
 
   /* Main area */
   .main { padding: 16px 12px; overflow: visible; }
@@ -190,7 +204,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
   <!-- Sidebar -->
   <div class="sidebar">
     <div id="accountList"></div>
-    <div class="add-account-btn" onclick="showAddAccountModal()">+ 添加组合</div>
   </div>
 
   <!-- Main Content -->
@@ -206,6 +219,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
         <button class="btn btn-sm" onclick="showSettingsModal()" title="设置">设置</button>
       </div>
     </div>
+
+    <!-- Account Tabs -->
+    <div class="account-tabs" id="accountTabs"></div>
 
     <!-- Market Indices -->
     <div class="indices-bar" id="indicesBar"></div>
@@ -757,34 +773,37 @@ function renderAll() {
 function renderSidebar() {
   const list = document.getElementById('accountList');
   let totalAll = 0, plAll = 0;
-  let cashAll = 0;
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
     totalAll += tv + (a.cash || 0);
-    cashAll += (a.cash || 0);
     plAll += (tv - tc);
   });
 
-  let html = `<div class="account-item hero ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()" style="border-bottom:1px solid #f0f0f0;">
+  list.innerHTML = `<div class="account-item hero ${isAllView() ? 'active' : ''}" onclick="selectAllAccounts()">
     <div class="name">全部账户</div>
     <div class="info">$${fmt(totalAll)} <span class="${plAll >= 0 ? 'gain' : 'loss'}">${plAll >= 0 ? '+' : ''}$${fmt(Math.abs(plAll))}</span></div>
   </div>`;
 
+  renderAccountTabs();
+}
+
+function renderAccountTabs() {
+  const tabs = document.getElementById('accountTabs');
+  let html = '';
   data.accounts.forEach(a => {
     const tv = a.holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
     const tc = a.holdings.reduce((s,h) => s + h.shares * h.costPerShare, 0);
     const cash = a.cash || 0;
     const pl = tv - tc;
     const plPct = tc > 0 ? (pl / tc * 100) : 0;
-    const cashLine = cash > 0 ? `<div class="info" style="color:#999;">现金: $${fmt(cash)}</div>` : '';
-    html += `<div class="account-item ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" ondblclick="renameAccount(event, '${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')" title="双击重命名 · 右键删除">
+    html += `<div class="account-tab ${!isAllView() && a.id === data.activeAccountId ? 'active' : ''}" onclick="selectAccount('${a.id}')" ondblclick="renameAccount(event, '${a.id}')" oncontextmenu="accountContextMenu(event, '${a.id}')" title="双击重命名 · 右键删除">
       <div class="name">${escHtml(a.name)}</div>
       <div class="info">$${fmt(tv + cash)} <span class="${pl >= 0 ? 'gain' : 'loss'}">${pl >= 0 ? '+' : ''}${plPct.toFixed(1)}%</span></div>
-      ${cashLine}
     </div>`;
   });
-  list.innerHTML = html;
+  html += `<div class="account-tab add-tab" onclick="showAddAccountModal()" title="添加组合">+</div>`;
+  tabs.innerHTML = html;
 }
 
 function renderSummary() {
