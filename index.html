@@ -74,7 +74,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .account-header { font-size: 13px; color: #666; margin-bottom: 16px; }
 
 /* Indices Bar */
-.indices-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+.indices-top { background: #fff; border-bottom: 1px solid #eee; padding: 10px 20px; }
+.indices-bar { display: flex; gap: 10px; margin-bottom: 0; }
 .index-card { flex: 1; background: #fff; border-radius: 8px; padding: 10px 12px; min-width: 0; }
 .index-card .idx-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
 .index-card .idx-name { font-size: 13px; font-weight: 600; color: #333; white-space: nowrap; }
@@ -200,6 +201,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 </head>
 <body>
 
+<!-- Top Market Indices -->
+<div class="indices-top">
+  <div class="indices-bar" id="indicesBar"></div>
+</div>
+
 <div class="container">
   <!-- Sidebar -->
   <div class="sidebar">
@@ -222,9 +228,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 
     <!-- Account Tabs -->
     <div class="account-tabs" id="accountTabs"></div>
-
-    <!-- Market Indices -->
-    <div class="indices-bar" id="indicesBar"></div>
 
     <div class="account-header" id="accountHeader"></div>
 
