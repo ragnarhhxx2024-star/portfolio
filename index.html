@@ -1239,18 +1239,20 @@ function setTimeRange(range) {
 }
 
 function renderLineChart() {
+  // Prefer marketValue (holdings only); fall back to value when missing on legacy entries
+  const pickVal = h => (h.marketValue != null ? h.marketValue : h.value);
   let hist;
   if (isAllView()) {
     const dateMap = {};
     data.accounts.forEach(a => {
       (data.history[a.id] || []).forEach(h => {
-        dateMap[h.date] = (dateMap[h.date] || 0) + h.value;
+        dateMap[h.date] = (dateMap[h.date] || 0) + pickVal(h);
       });
     });
     hist = Object.entries(dateMap).map(([date, value]) => ({ date, value }));
   } else {
     const account = getActiveAccount();
-    hist = data.history[account?.id] || [];
+    hist = (data.history[account?.id] || []).map(h => ({ date: h.date, value: pickVal(h) }));
   }
 
   if (hist.length === 0) {

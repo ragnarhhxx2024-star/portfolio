@@ -335,19 +335,32 @@ def update_data():
 
     for account in data['accounts']:
         acc_id = account['id']
+        cash = account.get('cash', 0)
         holdings_val = sum(h.get('shares', 0) * h.get('currentPrice', h.get('costPerShare', 0))
                           for h in account['holdings'])
-        total = holdings_val + account.get('cash', 0)
+        total = holdings_val + cash
 
         if acc_id not in data['history']:
             data['history'][acc_id] = []
 
         hist = data['history'][acc_id]
+
+        # Backfill marketValue on legacy entries.
+        # Per project history: entries before 2026-04-16 already stored market-only value;
+        # entries on/after 2026-04-16 stored total (holdings + cash) — subtract current cash to approximate.
+        for h in hist:
+            if 'marketValue' not in h:
+                if h.get('date', '') < '2026-04-16':
+                    h['marketValue'] = round(h.get('value', 0), 2)
+                else:
+                    h['marketValue'] = round(max(h.get('value', 0) - cash, 0), 2)
+
         existing = next((i for i, h in enumerate(hist) if h['date'] == today), -1)
         if existing >= 0:
             hist[existing]['value'] = total
+            hist[existing]['marketValue'] = round(holdings_val, 2)
         else:
-            hist.append({'date': today, 'value': total})
+            hist.append({'date': today, 'value': total, 'marketValue': round(holdings_val, 2)})
 
         # Keep max 5 years (~1825 days)
         if len(hist) > 1825:

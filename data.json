@@ -208,71 +208,86 @@
     "hk": [
       {
         "date": "2026-04-14",
-        "value": 22717.3
+        "value": 22717.3,
+        "marketValue": 22717.3
       },
       {
         "date": "2026-04-15",
-        "value": 23528.45
+        "value": 23528.45,
+        "marketValue": 23528.45
       },
       {
         "date": "2026-04-16",
-        "value": 29484.129999999997
+        "value": 29484.129999999997,
+        "marketValue": 24036.13
       },
       {
         "date": "2026-04-17",
-        "value": 29484.129999999997
+        "value": 29484.129999999997,
+        "marketValue": 24036.13
       },
       {
         "date": "2026-04-20",
-        "value": 29680.57
+        "value": 29680.57,
+        "marketValue": 24232.57
       }
     ],
     "sg": [
       {
         "date": "2026-04-14",
-        "value": 674.08
+        "value": 674.08,
+        "marketValue": 674.08
       },
       {
         "date": "2026-04-15",
-        "value": 680.96
+        "value": 680.96,
+        "marketValue": 680.96
       },
       {
         "date": "2026-04-16",
-        "value": 692.65
+        "value": 692.65,
+        "marketValue": 683.68
       },
       {
         "date": "2026-04-17",
-        "value": 692.65
+        "value": 692.65,
+        "marketValue": 683.68
       },
       {
         "date": "2026-04-20",
-        "value": 712.01
+        "value": 712.01,
+        "marketValue": 703.04
       }
     ],
     "ibkr": [
       {
         "date": "2026-04-14",
-        "value": 1588.44
+        "value": 1588.44,
+        "marketValue": 1588.44
       },
       {
         "date": "2026-04-15",
-        "value": 1678.2399999999998
+        "value": 1678.2399999999998,
+        "marketValue": 1678.24
       },
       {
         "date": "2026-04-16",
-        "value": 1709.6
+        "value": 1709.6,
+        "marketValue": 1148.6
       },
       {
         "date": "2026-04-17",
-        "value": 1709.6
+        "value": 1709.6,
+        "marketValue": 1148.6
       },
       {
         "date": "2026-04-20",
-        "value": 1723.1
+        "value": 1723.1,
+        "marketValue": 1162.1
       }
     ]
   },
-  "lastUpdate": "2026-04-20T08:13:01.187240+00:00",
+  "lastUpdate": "2026-04-20T08:31:46.259344+00:00",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
