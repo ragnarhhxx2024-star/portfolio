@@ -65,7 +65,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* Summary Cards */
-.summary-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.sub-value { font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 13px; font-weight: 600; margin-top: 2px; color: #6D6557; }
+.sub-value.gain { color: #1F4A2F; }
+.sub-value.loss { color: #7A1F1F; }
+.card.active .sub-value { color: #D4C9B3; }
+.card.active .sub-value.gain { color: #9DC4A3; }
+.card.active .sub-value.loss { color: #D59E9E; }
 .card { background: #F2EBD7; border-radius: 10px; padding: 14px 16px; transition: background 0.2s, color 0.2s; }
 .card.clickable { cursor: pointer; }
 .card.clickable:hover:not(.active) { background: #DDD4BF; }
@@ -255,20 +261,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
         <div class="value" id="totalValue">$0.00</div>
       </div>
       <div class="card">
-        <div class="label"><span class="icon">$</span> 总成本</div>
-        <div class="value" id="totalCost">$0.00</div>
-      </div>
-      <div class="card">
         <div class="label"><span class="icon">+</span> 盈亏</div>
         <div class="value" id="totalPL">$0.00</div>
-      </div>
-      <div class="card">
-        <div class="label"><span class="icon">%</span> 盈亏比例</div>
-        <div class="value" id="totalPLPct">0.00%</div>
+        <div class="sub-value" id="totalPLPct">0.00%</div>
       </div>
       <div class="card">
         <div class="label"><span class="icon">%</span> 当日盈亏</div>
         <div class="value" id="dailyPL">--</div>
+        <div class="sub-value" id="dailyPLPct">--</div>
       </div>
       <div class="card" id="cashCard">
         <div class="label"><span class="icon">$</span> 现金</div>
@@ -844,7 +844,6 @@ function renderSummary() {
   const totalAssets = totalVal + cash;
   document.getElementById('totalAssets').textContent = `$${fmt(totalAssets)}`;
   document.getElementById('totalValue').textContent = `$${fmt(totalVal)}`;
-  document.getElementById('totalCost').textContent = `$${fmt(totalCost)}`;
 
   const plEl = document.getElementById('totalPL');
   plEl.textContent = `${pl >= 0 ? '+' : ''}$${fmt(Math.abs(pl))}`;
@@ -852,7 +851,7 @@ function renderSummary() {
 
   const pctEl = document.getElementById('totalPLPct');
   pctEl.textContent = `${pl >= 0 ? '+' : ''}${plPct.toFixed(2)}%`;
-  pctEl.className = `value ${pl >= 0 ? 'gain' : 'loss'}`;
+  pctEl.className = `sub-value ${pl >= 0 ? 'gain' : 'loss'}`;
 
   document.getElementById('cashInput').value = cash || '';
   const cashPct = totalAssets > 0 ? (cash / totalAssets * 100).toFixed(1) : '0.0';
@@ -874,13 +873,19 @@ function renderSummary() {
     yesterdayTotal += (shares * price) / (denom || 1);
   });
   const prevValue = hasDailyData && yesterdayTotal > 0 ? yesterdayTotal : null;
+  const dailyPctEl = document.getElementById('dailyPLPct');
   if (prevValue && prevValue > 0) {
-    const dailyPct = (totalAssets - prevValue) / prevValue * 100;
-    dailyEl.textContent = `${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%`;
-    dailyEl.className = `value ${dailyPct >= 0 ? 'gain' : 'loss'}`;
+    const dailyDiff = totalAssets - prevValue;
+    const dailyPct = dailyDiff / prevValue * 100;
+    dailyEl.textContent = `${dailyDiff >= 0 ? '+' : ''}$${fmt(Math.abs(dailyDiff))}`;
+    dailyEl.className = `value ${dailyDiff >= 0 ? 'gain' : 'loss'}`;
+    dailyPctEl.textContent = `${dailyPct >= 0 ? '+' : ''}${dailyPct.toFixed(2)}%`;
+    dailyPctEl.className = `sub-value ${dailyPct >= 0 ? 'gain' : 'loss'}`;
   } else {
     dailyEl.textContent = '--';
     dailyEl.className = 'value';
+    dailyPctEl.textContent = '--';
+    dailyPctEl.className = 'sub-value';
   }
 }
 
