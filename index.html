@@ -1241,16 +1241,36 @@ function renderPieChart() {
     afterDatasetsDraw: (chart) => {
       if (highIndices.length === 0) return;
       const meta = chart.getDatasetMeta(0);
-      const alpha = 0.25 + 0.55 * Math.abs(Math.sin(Date.now() / 380));
+      const t = Math.abs(Math.sin(Date.now() / 380));
+      const fillAlpha = 0.18 + 0.42 * t;
+      const strokeAlpha = 0.35 + 0.55 * t;
       const c = chart.ctx;
+      const getAngle = (arc, key) => {
+        // Prefer animation _to (final target), fall back to live property
+        const a = arc.$animations && arc.$animations[key];
+        return (a && typeof a._to === 'number') ? a._to : arc[key];
+      };
       highIndices.forEach(i => {
         const arc = meta.data[i];
         if (!arc) return;
+        const sa = getAngle(arc, 'startAngle');
+        const ea = getAngle(arc, 'endAngle');
+        const oR = getAngle(arc, 'outerRadius');
+        const iR = getAngle(arc, 'innerRadius');
+        const x = getAngle(arc, 'x');
+        const y = getAngle(arc, 'y');
+        if (Math.abs(ea - sa) < 1e-4) return;
         c.save();
         c.beginPath();
-        c.arc(arc.x, arc.y, arc.outerRadius + 4, arc.startAngle, arc.endAngle);
-        c.lineWidth = 6;
-        c.strokeStyle = `rgba(244, 67, 54, ${alpha})`;
+        c.arc(x, y, oR, sa, ea);
+        c.arc(x, y, iR, ea, sa, true);
+        c.closePath();
+        c.fillStyle = `rgba(244, 67, 54, ${fillAlpha})`;
+        c.fill();
+        c.beginPath();
+        c.arc(x, y, oR + 3, sa, ea);
+        c.lineWidth = 4;
+        c.strokeStyle = `rgba(229, 57, 53, ${strokeAlpha})`;
         c.stroke();
         c.restore();
       });
