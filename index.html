@@ -254,23 +254,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
     <!-- Summary -->
     <div class="summary-cards">
       <div class="card clickable active" id="cardTotalAssets" onclick="setChartMode('total')">
-        <div class="label"><span class="icon">$</span> 总资产</div>
+        <div class="label">总资产</div>
         <div class="value" id="totalAssets">$0.00</div>
       </div>
       <div class="card clickable" id="cardMarketValue" onclick="setChartMode('market')">
-        <div class="label"><span class="icon">$</span> 持仓市值</div>
+        <div class="label">持仓市值</div>
         <div class="value" id="totalValue">$0.00</div>
       </div>
       <div class="card">
-        <div class="label"><span class="icon">+</span> 盈亏 <span class="sub-value inline" id="totalPLPct">0.00%</span></div>
+        <div class="label">盈亏 <span class="sub-value inline" id="totalPLPct">0.00%</span></div>
         <div class="value" id="totalPL">$0.00</div>
       </div>
       <div class="card">
-        <div class="label"><span class="icon">%</span> 当日盈亏 <span class="sub-value inline" id="dailyPLPct">--</span></div>
+        <div class="label">当日盈亏 <span class="sub-value inline" id="dailyPLPct">--</span></div>
         <div class="value" id="dailyPL">--</div>
       </div>
       <div class="card" id="cashCard">
-        <div class="label"><span class="icon">$</span> 现金</div>
+        <div class="label">现金</div>
         <div style="display:flex;align-items:center;gap:8px;">
           <input class="editable-input" id="cashInput" type="number" step="0.01" min="0" style="width:120px;font-size:18px;font-weight:700;" onchange="updateCash(this.value)">
           <span id="cashPct" style="font-size:13px;color:#6D6557;"></span>
