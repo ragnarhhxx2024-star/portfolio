@@ -82,8 +82,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .holdings-table tr:last-child td { border-bottom: none; }
 .holdings-table tr:hover { background: #fafafa; }
 .ticker-cell .ticker { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ticker-cell .ticker .tk-badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-weight: 700; letter-spacing: 0.3px; }
-.ticker-cell .name { font-size: 11px; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ticker-cell .ticker .tk-badge { display: inline-block; padding: 6px 12px; border-radius: 8px; font-weight: 700; letter-spacing: 0.3px; color: #fff; }
 .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #f0f0f0; color: #666; }
 .gain { color: #4caf50; }
 .loss { color: #f44336; }
@@ -909,18 +908,15 @@ function getSortValue(h, colId, totalVal) {
 }
 
 const TICKER_PALETTE = [
-  { bg: '#fef3c7', fg: '#92400e' }, { bg: '#dbeafe', fg: '#1e40af' },
-  { bg: '#d1fae5', fg: '#065f46' }, { bg: '#fce7f3', fg: '#9d174d' },
-  { bg: '#ede9fe', fg: '#5b21b6' }, { bg: '#fee2e2', fg: '#991b1b' },
-  { bg: '#e0e7ff', fg: '#3730a3' }, { bg: '#ccfbf1', fg: '#115e59' },
-  { bg: '#fed7aa', fg: '#9a3412' }, { bg: '#f3e8ff', fg: '#6b21a8' },
-  { bg: '#cffafe', fg: '#155e75' }, { bg: '#ecfccb', fg: '#3f6212' }
+  '#dc2626', '#ea580c', '#d97706', '#65a30d',
+  '#059669', '#0d9488', '#0891b2', '#2563eb',
+  '#4f46e5', '#7c3aed', '#9333ea', '#db2777'
 ];
 function tickerBadge(ticker) {
   let h = 0;
   for (let i = 0; i < ticker.length; i++) h = (h * 31 + ticker.charCodeAt(i)) >>> 0;
-  const c = TICKER_PALETTE[h % TICKER_PALETTE.length];
-  return `<span class="tk-badge" style="background:${c.bg};color:${c.fg};">${escHtml(ticker)}</span>`;
+  const bg = TICKER_PALETTE[h % TICKER_PALETTE.length];
+  return `<span class="tk-badge" style="background:${bg};">${escHtml(ticker)}</span>`;
 }
 
 function getCellHtml(colId, h, accId, idx, totalVal) {
@@ -1033,7 +1029,7 @@ function renderTable() {
     holdings.forEach(h => {
       const accId = h._accountId, idx = h._holdingIdx;
       html += '<tr>';
-      html += `<td class="ticker-cell"><div class="ticker">${tickerBadge(h.ticker)}</div><div class="name">${escHtml(h.name || '')}</div></td>`;
+      html += `<td class="ticker-cell"><div class="ticker">${tickerBadge(h.ticker)}</div></td>`;
       if (allView) html += getCellHtml('account', h, accId, idx, totalAssets);
       colOrder.forEach(id => { html += getCellHtml(id, h, accId, idx, totalAssets); });
       html += `<td><button class="delete-btn" onclick="deleteHoldingByRef('${accId}',${idx})" title="删除">x</button></td>`;
@@ -1069,7 +1065,7 @@ function renderCashRow(allView, cash, totalAssets, colCount) {
   }
 
   let html = '<tr style="background:#f9fdf9;border-top:2px solid #e0e0e0;">';
-  html += '<td class="ticker-cell"><div class="ticker" style="color:#4caf50;">CASH</div><div class="name">现金</div></td>';
+  html += '<td class="ticker-cell"><div class="ticker"><span class="tk-badge" style="background:#4caf50;">CASH</span></div></td>';
   if (allView) html += '<td>-</td>';
 
   colOrder.forEach(id => {
