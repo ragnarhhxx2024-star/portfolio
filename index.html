@@ -67,6 +67,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 /* Summary Cards */
 .summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
 .sub-value { font-family: 'JetBrains Mono', 'Consolas', monospace; font-size: 13px; font-weight: 600; margin-top: 2px; color: #6D6557; }
+.sub-value.inline { margin-top: 0; margin-left: 4px; font-size: 11px; letter-spacing: 0; text-transform: none; }
 .sub-value.gain { color: #1F4A2F; }
 .sub-value.loss { color: #7A1F1F; }
 .card.active .sub-value { color: #D4C9B3; }
@@ -261,14 +262,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
         <div class="value" id="totalValue">$0.00</div>
       </div>
       <div class="card">
-        <div class="label"><span class="icon">+</span> 盈亏</div>
+        <div class="label"><span class="icon">+</span> 盈亏 <span class="sub-value inline" id="totalPLPct">0.00%</span></div>
         <div class="value" id="totalPL">$0.00</div>
-        <div class="sub-value" id="totalPLPct">0.00%</div>
       </div>
       <div class="card">
-        <div class="label"><span class="icon">%</span> 当日盈亏</div>
+        <div class="label"><span class="icon">%</span> 当日盈亏 <span class="sub-value inline" id="dailyPLPct">--</span></div>
         <div class="value" id="dailyPL">--</div>
-        <div class="sub-value" id="dailyPLPct">--</div>
       </div>
       <div class="card" id="cashCard">
         <div class="label"><span class="icon">$</span> 现金</div>
