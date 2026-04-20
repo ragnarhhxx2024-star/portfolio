@@ -271,7 +271,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       </div>
       <div class="card" id="cashCard">
         <div class="label">现金 <span class="sub-value inline" id="cashPct"></span></div>
-        <input class="editable-input" id="cashInput" type="number" step="0.01" min="0" style="width:100%;font-size:20px;font-weight:700;font-family:'JetBrains Mono','Consolas',monospace;padding:0;border:none;background:transparent;" onchange="updateCash(this.value)">
+        <div style="display:flex;align-items:baseline;font-family:'JetBrains Mono','Consolas',monospace;font-size:20px;font-weight:700;letter-spacing:-0.5px;">
+          <span>$</span>
+          <input class="editable-input" id="cashInput" type="number" step="0.01" min="0" style="flex:1;min-width:0;font:inherit;letter-spacing:inherit;padding:0;border:none;background:transparent;text-align:left;" onchange="updateCash(this.value)">
+        </div>
       </div>
     </div>
 
