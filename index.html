@@ -97,7 +97,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .delete-btn:hover { color: #f44336; border-color: #f44336; background: #fef2f2; }
 
 /* Charts */
-.charts-row { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-top: 24px; }
+.charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; margin-top: 24px; margin-bottom: 24px; }
 .chart-card { background: #fff; border-radius: 10px; padding: 20px; }
 .chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
 .time-tabs { display: flex; gap: 4px; margin-bottom: 12px; justify-content: flex-end; }
@@ -243,27 +243,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
       </div>
     </div>
 
-    <!-- Holdings Table -->
-    <div class="table-header">
-      <h3>持仓明细</h3>
-      <button class="btn btn-primary" onclick="showAddHoldingModal()">+ 添加持仓</button>
-    </div>
-    <div class="holdings-table" id="holdingsTableWrap">
-      <table id="holdingsTable">
-        <thead><tr id="holdingsHead"></tr></thead>
-        <tbody id="holdingsBody"></tbody>
-      </table>
-    </div>
-
     <!-- Charts -->
     <div class="charts-row">
-      <div class="chart-card">
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
-          <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
-          <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
-        </div>
-        <canvas id="pieChart" height="260"></canvas>
-      </div>
       <div class="chart-card">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
           <h3 style="margin:0;">组合走势</h3>
@@ -281,6 +262,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
         </div>
         <canvas id="lineChart" height="220"></canvas>
       </div>
+      <div class="chart-card">
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
+          <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
+          <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
+        </div>
+        <canvas id="pieChart" height="260"></canvas>
+      </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="table-header">
+      <h3>持仓明细</h3>
+      <button class="btn btn-primary" onclick="showAddHoldingModal()">+ 添加持仓</button>
+    </div>
+    <div class="holdings-table" id="holdingsTableWrap">
+      <table id="holdingsTable">
+        <thead><tr id="holdingsHead"></tr></thead>
+        <tbody id="holdingsBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
