@@ -1242,8 +1242,7 @@ function renderPieChart() {
       if (highIndices.length === 0) return;
       const meta = chart.getDatasetMeta(0);
       const t = Math.abs(Math.sin(Date.now() / 380));
-      const fillAlpha = 0.18 + 0.42 * t;
-      const strokeAlpha = 0.35 + 0.55 * t;
+      const fillAlpha = 0.15 + 0.5 * t;
       const c = chart.ctx;
       const getAngle = (arc, key) => {
         // Prefer animation _to (final target), fall back to live property
@@ -1267,11 +1266,6 @@ function renderPieChart() {
         c.closePath();
         c.fillStyle = `rgba(244, 67, 54, ${fillAlpha})`;
         c.fill();
-        c.beginPath();
-        c.arc(x, y, oR + 3, sa, ea);
-        c.lineWidth = 4;
-        c.strokeStyle = `rgba(229, 57, 53, ${strokeAlpha})`;
-        c.stroke();
         c.restore();
       });
     }
