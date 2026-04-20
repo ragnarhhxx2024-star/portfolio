@@ -1358,11 +1358,9 @@ function renderLineChart() {
     font: { size: 11, weight: 'bold' },
     anchor: 'end', align: 'top', offset: 4,
     formatter: (v) => {
-      if (v == null) return '';
-      const base = `$${(v/1000).toFixed(1)}K`;
-      if (retPct == null) return base;
+      if (v == null || retPct == null) return '';
       const sign = retPct >= 0 ? '+' : '';
-      return `${base}  ${sign}${retPct.toFixed(2)}%`;
+      return `${sign}${retPct.toFixed(2)}%`;
     }
   });
 
