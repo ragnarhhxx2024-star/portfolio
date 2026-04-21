@@ -71,6 +71,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; }
 .header-actions { display: flex; gap: 8px; align-items: center; }
 .header-actions .update-time { font-size: 12px; color: #6D6557; margin-right: 8px; }
+.header-actions .sync-pill { font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 1px solid currentColor; background: transparent; font-family: 'JetBrains Mono', monospace; margin-right: 8px; user-select: none; }
+.header-actions .sync-pill.clickable:hover { background: rgba(0,0,0,0.04); }
 .btn { padding: 6px 14px; border: 1px solid #CEC2A7; border-radius: 6px; background: #F2EBD7; cursor: pointer; font-size: 13px; color: #6D6557; display: inline-flex; align-items: center; gap: 4px; transition: all .2s; }
 .btn:hover { border-color: #2B5A3C; color: #2B5A3C; }
 .btn-primary { background: #2B5A3C; color: #fff; border-color: #2B5A3C; }
@@ -257,6 +259,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
     <div class="header">
       <div class="header-actions">
         <span class="update-time" id="updateTime"></span>
+        <span class="sync-pill" id="syncPill" onclick="retrySyncNow()" style="display:none"></span>
         <button class="btn" onclick="refreshPrices()">刷新价格</button>
         <button class="btn" onclick="exportExcel()">导出Excel</button>
         <button class="btn" onclick="exportData()">导出JSON</button>
@@ -500,12 +503,61 @@ async function loadRemoteData() {
   return null;
 }
 
+// ==================== Sync status ====================
+let syncStatus = 'idle';
+let syncRetryTimer = null;
+let syncLastError = null;
+let syncLastSyncedAt = null;
+
+function setSyncStatus(status, detail) {
+  syncStatus = status;
+  syncLastError = detail || null;
+  if (status === 'synced') syncLastSyncedAt = new Date();
+  renderSyncPill();
+}
+
+function renderSyncPill() {
+  const el = document.getElementById('syncPill');
+  if (!el) return;
+  const states = {
+    'idle':     { text: '',              color: null,       clickable: false },
+    'synced':   { text: '✓ 已同步',       color: '#2B5A3C',  clickable: false },
+    'syncing':  { text: '⟳ 同步中…',      color: '#6D6557',  clickable: false },
+    'pending':  { text: '● 待同步',       color: '#D4A017',  clickable: true  },
+    'failed':   { text: '⚠ 同步失败',     color: '#9A2D2D',  clickable: true  },
+    'no-token': { text: '⚠ 未配置 Token', color: '#9A2D2D',  clickable: true  }
+  };
+  const s = states[syncStatus] || states.idle;
+  if (!s.text) { el.style.display = 'none'; return; }
+  el.style.display = 'inline-block';
+  el.textContent = s.text;
+  el.style.color = s.color;
+  el.classList.toggle('clickable', s.clickable);
+  el.style.cursor = s.clickable ? 'pointer' : 'default';
+  el.title = syncLastError || (s.clickable ? '点击重试' : (syncLastSyncedAt ? '最后同步 ' + syncLastSyncedAt.toLocaleTimeString('zh-CN') : ''));
+}
+
+function retrySyncNow() {
+  if (syncStatus === 'syncing') return;
+  if (syncStatus === 'no-token') { showSettingsModal(); return; }
+  saveToGitHub(data).then(ok => { if (!ok) scheduleSyncRetry(); });
+}
+
+function scheduleSyncRetry() {
+  if (syncRetryTimer) clearTimeout(syncRetryTimer);
+  syncRetryTimer = setTimeout(() => {
+    syncRetryTimer = null;
+    if (syncStatus === 'failed' || syncStatus === 'pending') retrySyncNow();
+  }, 30000);
+}
+
 async function saveToGitHub(d) {
   const config = getGHConfig();
   if (!config || !config.token) {
-    showToast('请先配置 GitHub 设置', 'error');
+    setSyncStatus('no-token', 'Token 未配置');
     return false;
   }
+  setSyncStatus('syncing');
 
   const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/data.json`;
   try {
@@ -569,15 +621,21 @@ async function saveToGitHub(d) {
     });
 
     if (putRes.ok) {
+      setSyncStatus('synced');
       return true;
     } else {
       const err = await putRes.json();
       console.error('GitHub API error:', err);
-      showToast('同步失败: ' + (err.message || putRes.status), 'error');
+      const msg = err.message || ('HTTP ' + putRes.status);
+      setSyncStatus('failed', msg);
+      scheduleSyncRetry();
+      showToast('同步失败: ' + msg, 'error');
       return false;
     }
   } catch(e) {
     console.error('GitHub sync error:', e);
+    setSyncStatus('failed', e.message);
+    scheduleSyncRetry();
     showToast('同步失败: ' + e.message, 'error');
     return false;
   }
@@ -586,16 +644,16 @@ async function saveToGitHub(d) {
 async function saveData(d) {
   d.lastUpdate = new Date().toISOString();
   saveLocalCache(d);
-  // Debounce GitHub saves
+  const config = getGHConfig();
+  if (!config || !config.token) {
+    setSyncStatus('no-token', 'Token 未配置，改动仅保存在本地');
+    return;
+  }
+  setSyncStatus('pending');
   if (saveData._timer) clearTimeout(saveData._timer);
   saveData._timer = setTimeout(async () => {
-    const config = getGHConfig();
-    if (config && config.token) {
-      const ok = await saveToGitHub(d);
-      if (ok) {
-        document.getElementById('updateTime').textContent +=  ' (已同步)';
-      }
-    }
+    const ok = await saveToGitHub(d);
+    if (!ok) scheduleSyncRetry();
   }, 2000);
 }
 
@@ -605,18 +663,19 @@ async function initData() {
   const remote = await loadRemoteData();
   const local = loadLocalData();
 
-  // Use whichever has a newer lastUpdate, or remote if equal
+  let localNewer = false;
   if (remote && local) {
     const rt = remote.lastUpdate || '';
     const lt = local.lastUpdate || '';
-    data = lt > rt ? local : remote;
+    localNewer = lt > rt;
+    data = localNewer ? local : remote;
   } else if (remote) {
     data = remote;
   } else if (local) {
     data = local;
+    localNewer = true;
   }
 
-  // Always use indices from remote data.json (updated by GitHub Actions)
   if (remote && remote.indices) {
     data.indices = remote.indices;
   }
@@ -628,6 +687,17 @@ async function initData() {
   }
 
   renderAll();
+
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token) {
+    setSyncStatus('no-token', 'Token 未配置，改动仅保存在本地');
+  } else if (localNewer) {
+    setSyncStatus('pending', '检测到未同步的本地改动，正在推送…');
+    const ok = await saveToGitHub(data);
+    if (!ok) scheduleSyncRetry();
+  } else {
+    setSyncStatus('synced');
+  }
 }
 
 // ==================== Data Helpers ====================
