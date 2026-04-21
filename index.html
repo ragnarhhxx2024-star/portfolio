@@ -1333,7 +1333,7 @@ function renderPieChart() {
     }
   };
 
-  if (piePulseTimer) { clearInterval(piePulseTimer); piePulseTimer = null; }
+  if (piePulseTimer) { cancelAnimationFrame(piePulseTimer); piePulseTimer = null; }
 
   pieChart = new Chart(ctx, {
     type: 'doughnut',
@@ -1373,7 +1373,12 @@ function renderPieChart() {
   });
 
   if (highIndices.length > 0) {
-    piePulseTimer = setInterval(() => { if (pieChart) pieChart.draw(); }, 60);
+    const tick = () => {
+      if (!pieChart) return;
+      pieChart.draw();
+      piePulseTimer = requestAnimationFrame(tick);
+    };
+    piePulseTimer = requestAnimationFrame(tick);
   }
 }
 
@@ -1490,7 +1495,9 @@ function renderLineChart() {
     display: (c) => c.dataIndex === lastIdx,
     color,
     font: { size: 11, weight: 'bold' },
-    anchor: 'end', align: 'top', offset: 4,
+    anchor: 'end', align: 'left', offset: 8,
+    clamp: true,
+    clip: false,
     formatter: (v) => {
       if (v == null || retPct == null) return '';
       const sign = retPct >= 0 ? '+' : '';
