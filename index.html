@@ -322,7 +322,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
           <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
           <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
         </div>
-        <div style="height: 320px;"><canvas id="pieChart"></canvas></div>
+        <div style="height: 320px; max-width: 320px; margin: 0 auto;"><canvas id="pieChart"></canvas></div>
       </div>
     </div>
 
@@ -1495,7 +1495,7 @@ function renderLineChart() {
     display: (c) => c.dataIndex === lastIdx,
     color,
     font: { size: 11, weight: 'bold' },
-    anchor: 'end', align: 'left', offset: 8,
+    anchor: 'end', align: 'bottom', offset: 6,
     clamp: true,
     clip: false,
     formatter: (v) => {
