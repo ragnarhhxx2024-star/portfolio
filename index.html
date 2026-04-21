@@ -1244,13 +1244,18 @@ function renderPieChart() {
     labels = entries.map(e => e[0]);
     values = entries.map(e => e[1]);
   } else {
-    labels = holdings.map(h => {
+    const entries = holdings.map(h => {
       const sec = h.sector || '';
       const acc = isAllView() && h._accountName ? `(${h._accountName})` : '';
-      return sec ? `${h.ticker} ${sec}${acc}` : `${h.ticker}${acc}`;
+      return {
+        label: sec ? `${h.ticker} ${sec}${acc}` : `${h.ticker}${acc}`,
+        value: h.shares * (h.currentPrice || h.costPerShare)
+      };
     });
-    values = holdings.map(h => h.shares * (h.currentPrice || h.costPerShare));
-    if (cash > 0) { labels.push('现金'); values.push(cash); }
+    if (cash > 0) entries.push({ label: '现金', value: cash });
+    entries.sort((a, b) => b.value - a.value);
+    labels = entries.map(e => e.label);
+    values = entries.map(e => e.value);
   }
 
   const ctx = document.getElementById('pieChart').getContext('2d');
