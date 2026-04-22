@@ -37,7 +37,7 @@
           "shares": 90,
           "costPerShare": 36.16,
           "currentPrice": 29.76,
-          "targetPct": 5,
+          "targetPct": 10,
           "sector": "医疗",
           "dailyPct": -4.031,
           "shortFloat": 38.71,
@@ -304,7 +304,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-22T03:35:35.433594+00:00",
+  "lastUpdate": "2026-04-22T04:23:56.055Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
