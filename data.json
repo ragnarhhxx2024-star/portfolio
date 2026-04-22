@@ -115,7 +115,7 @@
           "shares": 2,
           "costPerShare": 265.995,
           "currentPrice": 277.7,
-          "targetPct": 5,
+          "targetPct": 3,
           "sector": "能源",
           "dailyPct": -3.4288,
           "shortFloat": 2.82,
@@ -128,7 +128,7 @@
           "shares": 6,
           "costPerShare": 63.825,
           "currentPrice": 66.98,
-          "targetPct": 5,
+          "targetPct": 2,
           "sector": "消费",
           "dailyPct": -2.1046,
           "shortFloat": 13.98,
@@ -304,7 +304,7 @@
       }
     ]
   },
-  "lastUpdate": "2026-04-22T04:23:56.055Z",
+  "lastUpdate": "2026-04-22T04:24:19.540Z",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
