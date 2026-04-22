@@ -641,7 +641,7 @@ async function saveToGitHub(d) {
   }
 }
 
-async function saveData(d) {
+async function saveData(d, opts) {
   d.lastUpdate = new Date().toISOString();
   saveLocalCache(d);
   const config = getGHConfig();
@@ -651,6 +651,11 @@ async function saveData(d) {
   }
   setSyncStatus('pending');
   if (saveData._timer) clearTimeout(saveData._timer);
+  if (opts && opts.immediate) {
+    const ok = await saveToGitHub(d);
+    if (!ok) scheduleSyncRetry();
+    return ok;
+  }
   saveData._timer = setTimeout(async () => {
     const ok = await saveToGitHub(d);
     if (!ok) scheduleSyncRetry();
@@ -1744,10 +1749,23 @@ function saveHolding() {
     currentPrice: cost, targetPct: null, sector
   });
 
-  saveData(data);
   closeModal('addHoldingModal');
   renderAll();
-  showToast(`已添加 ${ticker} 到 ${account.name}`, 'success');
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token) {
+    saveData(data);
+    showToast(`已添加 ${ticker}（Token 未配置，未同步云端）`, 'error');
+    return;
+  }
+  saveData(data, { immediate: true }).then(ok => {
+    if (ok) {
+      showToast(`已添加 ${ticker} 到 ${account.name} 并同步云端`, 'success');
+    } else {
+      account.holdings.pop();
+      renderAll();
+      showToast(`添加 ${ticker} 失败，已回滚`, 'error');
+    }
+  });
 }
 
 function saveAccount() {
@@ -1763,14 +1781,27 @@ function saveAccount() {
   showToast(`已创建 ${name}`, 'success');
 }
 
-function deleteHoldingByRef(accountId, index) {
+async function deleteHoldingByRef(accountId, index) {
   const account = data.accounts.find(a => a.id === accountId);
   if (!account) return;
   const ticker = account.holdings[index].ticker;
   if (!confirm(`确定删除 ${ticker}？`)) return;
-  account.holdings.splice(index, 1);
-  saveData(data);
+  const removed = account.holdings.splice(index, 1)[0];
   renderAll();
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token) {
+    saveData(data);
+    showToast(`已本地删除 ${ticker}（Token 未配置，未同步云端）`, 'error');
+    return;
+  }
+  const ok = await saveData(data, { immediate: true });
+  if (ok) {
+    showToast(`已删除 ${ticker} 并同步云端`, 'success');
+  } else {
+    account.holdings.splice(index, 0, removed);
+    renderAll();
+    showToast(`删除 ${ticker} 失败，已回滚。请检查 Token 或网络`, 'error');
+  }
 }
 
 function getTargetSum() {
@@ -1843,15 +1874,30 @@ function updateFieldByRef(accountId, index, field, value) {
   renderAll();
 }
 
-function accountContextMenu(e, id) {
+async function accountContextMenu(e, id) {
   e.preventDefault();
   if (data.accounts.length <= 1) { showToast('至少保留一个组合', 'error'); return; }
   const acc = data.accounts.find(a => a.id === id);
-  if (confirm(`确定删除组合「${acc.name}」？`)) {
-    data.accounts = data.accounts.filter(a => a.id !== id);
-    if (data.activeAccountId === id) data.activeAccountId = data.accounts[0].id;
+  if (!confirm(`确定删除组合「${acc.name}」？`)) return;
+  const snapshot = JSON.parse(JSON.stringify(data.accounts));
+  const prevActive = data.activeAccountId;
+  data.accounts = data.accounts.filter(a => a.id !== id);
+  if (data.activeAccountId === id) data.activeAccountId = data.accounts[0].id;
+  renderAll();
+  const cfg = getGHConfig();
+  if (!cfg || !cfg.token) {
     saveData(data);
+    showToast(`已本地删除「${acc.name}」（Token 未配置，未同步云端）`, 'error');
+    return;
+  }
+  const ok = await saveData(data, { immediate: true });
+  if (ok) {
+    showToast(`已删除「${acc.name}」并同步云端`, 'success');
+  } else {
+    data.accounts = snapshot;
+    data.activeAccountId = prevActive;
     renderAll();
+    showToast(`删除「${acc.name}」失败，已回滚`, 'error');
   }
 }
 
