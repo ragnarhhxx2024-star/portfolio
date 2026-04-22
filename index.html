@@ -321,11 +321,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
         <div style="height: 320px;"><canvas id="lineChart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div style="display:flex;align-items:center;gap:4px;margin-bottom:12px;">
-          <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
-          <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="display:flex;gap:4px;">
+            <button class="time-tab active" id="pieTabHolding" onclick="setPieMode('holding')">持仓分布</button>
+            <button class="time-tab" id="pieTabSector" onclick="setPieMode('sector')">板块分布</button>
+          </div>
+          <div id="concentrationWarning" style="font-size:12px;color:#9A2D2D;display:none;font-weight:600;letter-spacing:0.3px;">⚠️ <span id="concentrationCount">0</span> 项超 25%</div>
         </div>
-        <div style="height: 320px; max-width: 320px; margin: 0 auto;"><canvas id="pieChart"></canvas></div>
+        <div style="height: 360px;"><canvas id="pieChart"></canvas></div>
       </div>
     </div>
 
@@ -1291,21 +1294,22 @@ function setPieMode(mode) {
 
 function renderPieChart() {
   const holdings = getViewHoldings();
+  const warnDom = document.getElementById('concentrationWarning');
   if (holdings.length === 0) {
     if (pieChart) { pieChart.destroy(); pieChart = null; }
+    if (warnDom) warnDom.style.display = 'none';
     return;
   }
-
-  const colors = ['#4e79a7','#59a14f','#f28e2b','#e15759','#76b7b2','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac','#a0cbe8','#ffbe7d','#86bcb6','#d4a6c8'];
 
   // Calculate cash
   let cash = 0;
   if (isAllView()) { data.accounts.forEach(a => { cash += (a.cash || 0); }); }
   else { const acc = getActiveAccount(); cash = acc?.cash || 0; }
 
-  let labels, values, totalVal;
   const holdingsVal = holdings.reduce((s,h) => s + h.shares * (h.currentPrice || h.costPerShare), 0);
-  totalVal = holdingsVal + cash;
+  const totalVal = holdingsVal + cash;
+
+  let labels, values;
 
   if (pieMode === 'sector') {
     const sectorMap = {};
@@ -1319,147 +1323,105 @@ function renderPieChart() {
     labels = entries.map(e => e[0]);
     values = entries.map(e => e[1]);
   } else {
-    const entries = holdings.map(h => {
-      const sec = h.sector || '';
-      const acc = isAllView() && h._accountName ? `(${h._accountName})` : '';
-      return {
-        label: sec ? `${h.ticker} ${sec}${acc}` : `${h.ticker}${acc}`,
-        value: h.shares * (h.currentPrice || h.costPerShare)
-      };
-    });
+    const entries = holdings.map(h => ({
+      label: isAllView() && h._accountName ? `${h.ticker} (${h._accountName})` : h.ticker,
+      value: h.shares * (h.currentPrice || h.costPerShare)
+    }));
     if (cash > 0) entries.push({ label: '现金', value: cash });
     entries.sort((a, b) => b.value - a.value);
     labels = entries.map(e => e.label);
     values = entries.map(e => e.value);
   }
 
-  const ctx = document.getElementById('pieChart').getContext('2d');
-  if (pieChart) pieChart.destroy();
+  const pcts = values.map(v => totalVal > 0 ? v / totalVal * 100 : 0);
 
-  // Compute YTD return: (current total - earliest YTD total) / earliest YTD total
-  const yearStr = String(new Date().getFullYear());
-  let ytdPct = null;
-  const accHist = isAllView()
-    ? (() => { const m = {}; data.accounts.forEach(a => (data.history[a.id] || []).forEach(h => { m[h.date] = (m[h.date] || 0) + (h.value || 0); })); return Object.entries(m).map(([date, value]) => ({ date, value })).sort((a,b) => a.date.localeCompare(b.date)); })()
-    : (data.history[getActiveAccount()?.id] || []).slice().sort((a,b) => a.date.localeCompare(b.date));
-  const ytdEntries = accHist.filter(h => h.date.startsWith(yearStr));
-  if (ytdEntries.length >= 2 && ytdEntries[0].value > 0) {
-    ytdPct = (ytdEntries[ytdEntries.length - 1].value - ytdEntries[0].value) / ytdEntries[0].value * 100;
+  const CONCENTRATION_THRESHOLD = 25;
+  const WARN_COLOR = '#9A2D2D';
+  const BAR_COLOR = '#4e79a7';
+  const CASH_COLOR = '#59a14f';
+
+  const colors = labels.map((lbl, i) => {
+    if (/^现金/.test(lbl)) return CASH_COLOR;
+    if (pcts[i] >= CONCENTRATION_THRESHOLD) return WARN_COLOR;
+    return BAR_COLOR;
+  });
+
+  const overCount = pcts.filter((p, i) => p >= CONCENTRATION_THRESHOLD && !/^现金/.test(labels[i])).length;
+  if (warnDom) {
+    if (overCount > 0) {
+      warnDom.style.display = '';
+      document.getElementById('concentrationCount').textContent = overCount;
+    } else {
+      warnDom.style.display = 'none';
+    }
   }
 
-  const centerTextPlugin = {
-    id: 'centerText',
-    afterDraw: (chart) => {
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return;
-      const cx = (chartArea.left + chartArea.right) / 2;
-      const cy = (chartArea.top + chartArea.bottom) / 2;
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const hasYtd = ytdPct != null;
-      ctx.fillStyle = '#2A2F25';
-      ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`$${fmt(totalVal)}`, cx, hasYtd ? cy - 10 : cy);
-      if (hasYtd) {
-        const sign = ytdPct >= 0 ? '+' : '';
-        ctx.fillStyle = ytdPct >= 0 ? '#2B5A3C' : '#9A2D2D';
-        ctx.font = '13px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`年初至今 ${sign}${ytdPct.toFixed(2)}%`, cx, cy + 18);
-      }
-      ctx.restore();
-    }
-  };
-
-  // High-concentration highlight: slices >= 30% pulse with red glowing border
-  const CONCENTRATION_THRESHOLD = 30;
-  const highIndices = values
-    .map((v, i) => ({ i, pct: totalVal > 0 ? v / totalVal * 100 : 0, label: labels[i] }))
-    .filter(x => x.pct >= CONCENTRATION_THRESHOLD && !/^现金/.test(x.label))
-    .map(x => x.i);
-
-  const pulsePlugin = {
-    id: 'concentrationPulse',
-    afterDatasetsDraw: (chart) => {
-      if (highIndices.length === 0) return;
-      const meta = chart.getDatasetMeta(0);
-      const t = Math.abs(Math.sin(Date.now() / 380));
-      const fillAlpha = 0.15 + 0.5 * t;
-      const c = chart.ctx;
-      const getAngle = (arc, key) => {
-        // Prefer animation _to (final target), fall back to live property
-        const a = arc.$animations && arc.$animations[key];
-        return (a && typeof a._to === 'number') ? a._to : arc[key];
-      };
-      highIndices.forEach(i => {
-        const arc = meta.data[i];
-        if (!arc) return;
-        const sa = getAngle(arc, 'startAngle');
-        const ea = getAngle(arc, 'endAngle');
-        const oR = getAngle(arc, 'outerRadius');
-        const iR = getAngle(arc, 'innerRadius');
-        const x = getAngle(arc, 'x');
-        const y = getAngle(arc, 'y');
-        if (Math.abs(ea - sa) < 1e-4) return;
-        c.save();
-        c.beginPath();
-        c.arc(x, y, oR, sa, ea);
-        c.arc(x, y, iR, ea, sa, true);
-        c.closePath();
-        c.fillStyle = `rgba(244, 67, 54, ${fillAlpha})`;
-        c.fill();
-        c.restore();
-      });
-    }
-  };
-
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if (pieChart) pieChart.destroy();
   if (piePulseTimer) { cancelAnimationFrame(piePulseTimer); piePulseTimer = null; }
 
+  const maxPct = Math.max(...pcts, 0);
+  const xMax = Math.max(10, Math.ceil((maxPct + 3) / 5) * 5);
+
   pieChart = new Chart(ctx, {
-    type: 'doughnut',
+    type: 'bar',
     data: {
       labels,
-      datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
+      datasets: [{
+        data: pcts,
+        backgroundColor: colors,
+        borderWidth: 0,
+        borderRadius: 3,
+        barPercentage: 0.82,
+        categoryPercentage: 0.88
+      }]
     },
-    plugins: [centerTextPlugin, pulsePlugin],
     options: {
+      indexAxis: 'y',
       responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { right: 48, left: 4, top: 4, bottom: 4 } },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const pct = totalVal > 0 ? (ctx.parsed / totalVal * 100).toFixed(1) : 0;
-              return ` ${ctx.label}: $${fmt(ctx.parsed)} (${pct}%)`;
-            }
+            label: (c) => ` ${c.label}: $${fmt(values[c.dataIndex])} (${pcts[c.dataIndex].toFixed(2)}%)`
           }
         },
         datalabels: {
-          color: '#fff',
-          font: { size: 12, weight: 'bold' },
-          formatter: (value, ctx) => {
-            const pct = totalVal > 0 ? (value / totalVal * 100) : 0;
-            if (pct < 4) return '';
-            const label = ctx.chart.data.labels[ctx.dataIndex];
-            const name = label.split(' ')[0];
-            return `${name} ${pct.toFixed(0)}%`;
-          },
-          anchor: 'center',
-          align: 'center'
+          color: '#2A2F25',
+          font: { size: 11, family: 'JetBrains Mono, monospace', weight: 'bold' },
+          anchor: 'end',
+          align: 'end',
+          offset: 4,
+          clamp: true,
+          clip: false,
+          formatter: (v) => v.toFixed(1) + '%'
         }
       },
-      cutout: '55%'
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: xMax,
+          grid: { color: 'rgba(184, 171, 142, 0.3)', drawBorder: false },
+          border: { display: false },
+          ticks: {
+            color: '#5a5444',
+            font: { family: 'JetBrains Mono, monospace', size: 11 },
+            callback: (v) => v + '%'
+          }
+        },
+        y: {
+          grid: { display: false, drawBorder: false },
+          border: { display: false },
+          ticks: {
+            color: '#2A2F25',
+            font: { family: 'JetBrains Mono, monospace', size: 12, weight: '600' }
+          }
+        }
+      }
     }
   });
-
-  if (highIndices.length > 0) {
-    const tick = () => {
-      if (!pieChart) return;
-      pieChart.draw();
-      piePulseTimer = requestAnimationFrame(tick);
-    };
-    piePulseTimer = requestAnimationFrame(tick);
-  }
 }
 
 let chartMode = 'total'; // 'total' = 总资产含现金, 'market' = 持仓市值
