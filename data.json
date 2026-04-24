@@ -10,10 +10,10 @@
           "type": "STOCK",
           "shares": 37,
           "costPerShare": 133.8,
-          "currentPrice": 305.33,
+          "currentPrice": 348.24,
           "targetPct": 30,
           "sector": "半导体",
-          "dailyPct": 0.6162,
+          "dailyPct": 14.0555,
           "shortFloat": 2.25,
           "shortFloatSource": "finviz"
         },
@@ -23,10 +23,10 @@
           "type": "STOCK",
           "shares": 13,
           "costPerShare": 165.047,
-          "currentPrice": 176.28,
+          "currentPrice": 172.357,
           "targetPct": 10,
           "sector": "数据中心",
-          "dailyPct": -5.984,
+          "dailyPct": -2.2254,
           "shortFloat": 1.62,
           "shortFloatSource": "finviz"
         },
@@ -36,10 +36,10 @@
           "type": "STOCK",
           "shares": 90,
           "costPerShare": 36.16,
-          "currentPrice": 28.15,
+          "currentPrice": 30.11,
           "targetPct": 10,
           "sector": "医疗",
-          "dailyPct": -2.9645,
+          "dailyPct": 6.9627,
           "shortFloat": 38.71,
           "shortFloatSource": "yahoo"
         },
@@ -49,10 +49,10 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 264.234,
-          "currentPrice": 197.93,
+          "currentPrice": 197.905,
           "targetPct": 5,
           "sector": "加密货币",
-          "dailyPct": -4.0293,
+          "dailyPct": -0.0126,
           "shortFloat": 11.23,
           "shortFloatSource": "finviz"
         },
@@ -62,10 +62,10 @@
           "type": "STOCK",
           "shares": 14,
           "costPerShare": 70.557,
-          "currentPrice": 100.01,
+          "currentPrice": 98.0,
           "targetPct": 5,
           "sector": "加密货币",
-          "dailyPct": -4.1683,
+          "dailyPct": -2.0098,
           "shortFloat": 12.55,
           "shortFloatSource": "finviz"
         },
@@ -75,10 +75,10 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 145.083,
-          "currentPrice": 141.57,
+          "currentPrice": 140.67,
           "targetPct": 5,
           "sector": "AI",
-          "dailyPct": -7.2402,
+          "dailyPct": -0.6357,
           "shortFloat": 2.31,
           "shortFloatSource": "finviz"
         },
@@ -88,10 +88,10 @@
           "type": "STOCK",
           "shares": 19,
           "costPerShare": 159,
-          "currentPrice": 100.29,
+          "currentPrice": 100.95,
           "targetPct": 5,
           "sector": "软件",
-          "dailyPct": -4.9564,
+          "dailyPct": 0.6581,
           "shortFloat": 21.94,
           "shortFloatSource": "yahoo"
         },
@@ -101,10 +101,10 @@
           "type": "STOCK",
           "shares": 15,
           "costPerShare": 50.43,
-          "currentPrice": 66.14,
+          "currentPrice": 64.89,
           "targetPct": 5,
           "sector": "金融科技",
-          "dailyPct": -0.5414,
+          "dailyPct": -1.8899,
           "shortFloat": 16.02,
           "shortFloatSource": "finviz"
         },
@@ -114,10 +114,10 @@
           "type": "STOCK",
           "shares": 2,
           "costPerShare": 265.995,
-          "currentPrice": 292.77,
+          "currentPrice": 304.81,
           "targetPct": 3,
           "sector": "能源",
-          "dailyPct": 1.9536,
+          "dailyPct": 4.1124,
           "shortFloat": 2.82,
           "shortFloatSource": "finviz"
         },
@@ -127,10 +127,10 @@
           "type": "STOCK",
           "shares": 6,
           "costPerShare": 63.825,
-          "currentPrice": 66.23,
+          "currentPrice": 66.25,
           "targetPct": 2,
           "sector": "消费",
-          "dailyPct": 0.9912,
+          "dailyPct": 0.0302,
           "shortFloat": 13.98,
           "shortFloatSource": "finviz"
         }
@@ -148,10 +148,10 @@
           "type": "ETF",
           "shares": 16,
           "costPerShare": 61.625,
-          "currentPrice": 44.05,
+          "currentPrice": 44.045,
           "targetPct": null,
           "sector": "加密货币",
-          "dailyPct": -1.5642
+          "dailyPct": -0.0114
         }
       ],
       "cash": 8.97
@@ -166,10 +166,10 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 63.84,
-          "currentPrice": 55.45,
+          "currentPrice": 53.215,
           "targetPct": null,
           "sector": "软件",
-          "dailyPct": -7.0255,
+          "dailyPct": -4.0307,
           "shortFloat": 3.02,
           "shortFloatSource": "finviz"
         },
@@ -179,10 +179,10 @@
           "type": "STOCK",
           "shares": 10,
           "costPerShare": 50.41,
-          "currentPrice": 51.44,
+          "currentPrice": 50.6801,
           "targetPct": null,
           "sector": "AI",
-          "dailyPct": -7.332,
+          "dailyPct": -1.4773,
           "shortFloat": 27.95,
           "shortFloatSource": "yahoo"
         }
@@ -232,6 +232,11 @@
         "date": "2026-04-23",
         "value": 30328.02,
         "marketValue": 24798.02
+      },
+      {
+        "date": "2026-04-24",
+        "value": 32021.691000000003,
+        "marketValue": 26491.69
       }
     ],
     "sg": [
@@ -274,6 +279,11 @@
         "date": "2026-04-23",
         "value": 713.77,
         "marketValue": 704.8
+      },
+      {
+        "date": "2026-04-24",
+        "value": 713.69,
+        "marketValue": 704.72
       }
     ],
     "ibkr": [
@@ -316,49 +326,50 @@
         "date": "2026-04-23",
         "value": 1629.9,
         "marketValue": 1068.9
+      },
+      {
+        "date": "2026-04-24",
+        "value": 1599.951,
+        "marketValue": 1038.95
       }
     ]
   },
-  "lastUpdate": "2026-04-23T21:39:43.373282+00:00",
+  "lastUpdate": "2026-04-24T15:07:23.413363+00:00",
   "indices": {
     "^DJI": {
       "name": "道琼斯",
-      "price": 49310.32,
-      "daily": -0.36,
-      "ytd": 1.92,
-      "m1": 6.2,
-      "m3": 0.43
+      "price": 49112.77,
+      "daily": -0.4,
+      "ytd": 1.51,
+      "m1": 6.86,
+      "m3": -0.61
     },
     "^GSPC": {
       "name": "标普500",
-      "price": 7108.4,
-      "daily": -0.41,
-      "ytd": 3.64,
-      "m1": 7.84,
-      "m3": 2.79
+      "price": 7137.35,
+      "daily": 0.41,
+      "ytd": 4.07,
+      "m1": 10.19,
+      "m3": 2.69
     },
     "^RUT": {
       "name": "罗素2000",
-      "price": 2775.0962,
-      "daily": -0.37,
-      "ytd": 10.64,
-      "m1": 9.41,
-      "m3": 3.97
+      "price": 2779.3674,
+      "daily": 0.15,
+      "ytd": 10.81,
+      "m1": 11.47,
+      "m3": 4.5
     },
     "^NDX": {
       "name": "纳斯达克100",
-      "price": 26782.625,
-      "daily": -0.57,
-      "ytd": 6.25,
-      "m1": 10.84,
-      "m3": 4.6
+      "price": 27154.654,
+      "daily": 1.39,
+      "ytd": 7.73,
+      "m1": 15.13,
+      "m3": 5.61
     }
   },
   "spxHistory": [
-    {
-      "date": "2021-04-19",
-      "value": 4163.26
-    },
     {
       "date": "2021-04-20",
       "value": 4134.94
@@ -5394,6 +5405,10 @@
     {
       "date": "2026-04-23",
       "value": 7108.4
+    },
+    {
+      "date": "2026-04-24",
+      "value": 7137.35
     }
   ]
 }
